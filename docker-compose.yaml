@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  ollama:
+    image: ollama/ollama
+    # ports:
+    #   - "11434:11434"
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "ollama serve &
+       sleep 5 &&
+       ollama pull phi3 &&
+       wait"
+    volumes:
+      - ollama:/root/.ollama
+  hablemos-espanhol-backend:
+    build:
+      context: ./hablemos-espanhol-backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - ollama
+
+volumes:
+  ollama:
