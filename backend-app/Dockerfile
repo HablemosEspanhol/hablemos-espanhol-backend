@@ -1,5 +1,7 @@
 from node:22-alpine
 
+RUN mkdir -p /app/data
+
 WORKDIR /app
 
 RUN apk add --no-cache tzdata

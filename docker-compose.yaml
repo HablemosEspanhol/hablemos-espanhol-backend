@@ -15,12 +15,13 @@ services:
       - ollama:/root/.ollama
   hablemos-espanhol-backend:
     build:
-      context: ./hablemos-espanhol-backend
+      context: ./backend-app
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
-    depends_on:
-      - ollama
+    volumes:
+      - app_data:/app/data
 
 volumes:
   ollama:
+  app_data:
