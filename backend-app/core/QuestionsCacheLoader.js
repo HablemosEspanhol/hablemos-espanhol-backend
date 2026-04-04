@@ -1,54 +1,79 @@
 import fs from "fs/promises"
 import Logger from "./Logger.js";
+import WordLoader from "./WordLoader.js";
+
+const File = (path) => {
+  const update = async function (data) {
+    await fs.writeFile(
+      path,
+      JSON.stringify(data, null, 2)
+    )
+  }
+
+  const load = async function (defaultObject) {
+    try {
+      const fileContent = await fs.readFile(path, "utf-8");
+      return JSON.parse(fileContent)
+    } catch (error) {
+      Logger.error("Erro ao carregar Perguntas: ", error);
+      return defaultObject;
+    }
+  }
+
+  return {
+    update,
+    load
+  }
+}
 
 var questionsArray = [];
 var filePath = "/app/data/questionsArray.json";
+var filePathV2 = "/app/data/questionsArrayV2.json";
 
-async function saveData(data) {
-  await fs.writeFile(
-    filePath,
-    JSON.stringify(data, null, 2)
-  )
+var fileV1 = File(filePath);
+var fileV2 = File(filePathV2);
+
+const AiRequest = (body) => {
+  return fetch("http://ollama:11434/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  })
 }
 
 async function loadDataFromDisc() {
-    try {
-        const fileContent = await fs.readFile(filePath, "utf-8");
-        questionsArray = JSON.parse(fileContent)
-    } catch (error) {
-        Logger.error("Erro ao carregar Perguntas: ", error);
-    }
+  questionsArray = await fileV1.load([]);
+  questionFromWordCache = await fileV2.load({});
 }
 
 function getQuestions(amount) {
-    var limit = questionsArray.length >= amount ? amount : questionsArray.length;
-    var selectedQuestions = [];
+  var limit = questionsArray.length >= amount ? amount : questionsArray.length;
+  var selectedQuestions = [];
 
-    while (selectedQuestions.length < limit) {
-        const questionIndex = Math.floor(Math.random() * questionsArray.length);
-        const question = questionsArray[questionIndex];
-        if (!selectedQuestions.includes(question)) {
-            selectedQuestions.push(question);
-        }
+  while (selectedQuestions.length < limit) {
+    const questionIndex = Math.floor(Math.random() * questionsArray.length);
+    const question = questionsArray[questionIndex];
+    if (!selectedQuestions.includes(question)) {
+      selectedQuestions.push(question);
     }
+  }
 
-    return selectedQuestions;
+  return selectedQuestions;
 }
 
 async function executeFetch() {
-    Logger.info("[OLLAMA] Fazendo pooling de perguntas");
-    const amountOfQuestionToPull = 3;
-    const ollamaResponse = await fetch("http://ollama:11434/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            model: "phi3",
-            stream: false,
-            format: "json",
-            options: {
-                num_predict: 150
-            },
-            prompt: `Retorne apenas JSON válido.
+  Logger.info("[OLLAMA] Fazendo pooling de perguntas");
+  const amountOfQuestionToPull = 3;
+  const AiBody = {
+    model: "phi3",
+    stream: false,
+    format: "json",
+    options: {
+      num_predict: 150
+    },
+    prompt:
+
+      `Retorne apenas JSON válido.
 
 Formato:
 [
@@ -57,53 +82,199 @@ Formato:
 
 Gere ${amountOfQuestionToPull} exercícios em espanhol para iniciantes. o front do card deve ser uma frase ou palavra em portugues ou espanhol e atrás a tradução. 
 Se por exemplo, a frase do front for em portugues, a back deve ser em espanhol e se a front for em espanhol a de trás deve ser em portugues`
-        })
-    });
 
-    const ollamaData = await ollamaResponse.json()
-    const exercises = JSON.parse(ollamaData.response);
+  };
+  const ollamaResponse = await AiRequest(AiBody);
+  const ollamaData = await ollamaResponse.json()
+  const exercises = JSON.parse(ollamaData.response);
 
-    if(exercises.cards){
-        Logger.info("exercises.cards[]", exercises.cards);
-        questionsArray.push(...exercises.cards); 
-    } else if(exercises.length > 0) {
-        Logger.info("exercises[]", exercises);
-        for (const element of exercises) {
-             questionsArray.push(element);
-        }       
-    } else if(exercises.front){
-        Logger.info("{front, back}", exercises);
-        questionsArray.push(exercises);
-    } else {
-        Logger.info("exercises{}", exercises);
-        for (const key in exercises) {            
-            const element = exercises[key];            
-            questionsArray.push(element);
-        }
+  if (exercises.cards) {
+    Logger.info("exercises.cards[]", exercises.cards);
+    questionsArray.push(...exercises.cards);
+  } else if (exercises.length > 0) {
+    Logger.info("exercises[]", exercises);
+    for (const element of exercises) {
+      questionsArray.push(element);
     }
+  } else if (exercises.front) {
+    Logger.info("{front, back}", exercises);
+    questionsArray.push(exercises);
+  } else {
+    Logger.info("exercises{}", exercises);
+    for (const key in exercises) {
+      const element = exercises[key];
+      questionsArray.push(element);
+    }
+  }
 
-    Logger.info("questionsArray", questionsArray);
-    await saveData(questionsArray);
+  Logger.info("questionsArray", questionsArray);
+  await fileV1.update(questionsArray);
 }
 
 async function pollingQuestions() {
-    await loadDataFromDisc();
-
-    while (questionsArray.length < 25) {
-        try {
-            await executeFetch();
-        } catch (error) {
-            Logger.error("Erro ao fazer pooling das perguntas: ", error);
-        }
-    }
+  await loadDataFromDisc();
+  await pollingQuestionsOld();
+  await pollingQuestionsByLevel();
 }
 
+async function pollingQuestionsOld() {
+  while (questionsArray.length < 25) {
+    try {
+      await executeFetch();
+    } catch (error) {
+      Logger.error("Erro ao fazer pooling das perguntas: ", error);
+    }
+  }
+}
+
+async function pollingQuestionsByLevel() {
+  var niveis = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  var words = await WordLoader.loadAll();
+  var from = "espanhol";
+  var to = "português";
+
+  for (let index = 0; index < niveis.length; index++) {
+    const nivel = niveis[index];
+    await checkIfNivelWasCreated(nivel);
+
+    for (let wordIndex = 0; wordIndex < words.length; wordIndex++) {      
+
+      var word = words[wordIndex];      
+
+      if (!questionFromWordCache[nivel][word]) {
+        console.log(`-----------------------------------------------------------`);
+        console.log(`Gerando Questões para a palavra ${word} no nivel ${nivel}`);
+        console.log(`-----------------------------------------------------------`);
+        var begin = Date.now();
+        await generateQuestionsFromWord(
+          word,
+          nivel,
+          from,
+          to
+        );
+        var end = Date.now();
+        var durationInMinutes = (end - begin) / 1000 / 60;
+
+        console.log(`-----------------------------------------------------------`);
+        console.log(`Geradas Questões para a palavra ${word} no nivel ${nivel}. Duração em minutos ${durationInMinutes}`);
+        console.log(`-----------------------------------------------------------`);
+      }
+
+    }
+  }
+}
+
+async function generateQuestionsFromWord(word, nivel, idiomaFrase, idiomaTraducao) {
+
+  if (questionFromWordCache[nivel][word]) {
+    console.log(`Lendo palavra ${word} do cache`);
+    return Promise.resolve(questionFromWordCache[nivel][word]);
+  }
+
+  const prompt =
+    `Gere 3 frases para palavra abaixo.
+
+Regras:
+- Palavra: ${word}
+- Nivel: ${nivel}
+- Frase deve ser em ${idiomaFrase}
+- As frases devem ser naturais e usadas no dia a dia
+- Cada frase deve conter a palavra correspondente
+- Inclua tradução em ${idiomaTraducao}
+- Gere EXATAMENTE 3 frases por palavra (nem mais, nem menos)
+
+Formato JSON:
+ {
+    "palavra": "${word}",
+    "frases": [
+      {
+        "texto": "...",
+        "traduccion": "..."
+      },
+      {
+        "texto": "...",
+        "traduccion": "..."
+      },
+      {
+        "texto": "...",
+        "traduccion": "..."
+      }
+    ]
+  }
+`;
+
+  console.log("Prompt: ", prompt);
+
+  const ollamaResponse = await AiRequest({
+    model: "phi3",
+    stream: false,
+    format: "json",
+    options: {
+      num_predict: 200
+    },
+    prompt,
+  });
+
+  const ollamaData = await ollamaResponse.json()
+
+  let parsed;
+  try {
+    parsed = JSON.parse(ollamaData.response);
+    if (parsed.palavra === word) {
+      questionFromWordCache[nivel][word] = parsed;
+      await fileV2.update(questionFromWordCache);
+    }
+  } catch {
+    throw new Error("Resposta inválida da IA");
+  }
+
+  return parsed;
+}
+
+var questionFromWordCache = {}
+
+async function checkIfNivelWasCreated(nivel) {
+  if (!questionFromWordCache[nivel]) {
+    questionFromWordCache[nivel] = {};
+    await fileV2.update(questionFromWordCache);
+  }
+}
+
+async function generateQuestionsFromWords(words, nivel) {
+  const limite = 3; // 👈 ajuste (2-4 ideal pra Ollama local)
+  const resultados = [];
+  let index = 0;
+
+  await checkIfNivelWasCreated(nivel);
+
+  async function worker() {
+    while (index < words.length) {
+      const i = index++;
+      try {
+        resultados[i] = await generateQuestionsFromWord(
+          words[i],
+          nivel,
+          "espanhol",
+          "português"
+        );
+      } catch (err) {
+        resultados[i] = { error: err.message };
+      }
+    }
+  }
+
+  const workers = Array.from({ length: limite }, worker);
+  await Promise.all(workers);
+
+  return resultados;
+}
 
 function QuestionsCacheLoader() {
-    return {
-        getQuestions,
-        pollingQuestions
-    }
+  return {
+    getQuestions,
+    pollingQuestions,
+    generateQuestionsFromWords
+  }
 }
 
 export default QuestionsCacheLoader();
