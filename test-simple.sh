@@ -151,6 +151,71 @@ echo "$MIXED_RESPONSE" | grep -q '"accuracy":' && echo "  ✓ Has accuracy field
 echo "$MIXED_RESPONSE" | grep -q '"newLevel":' && echo "  ✓ Has newLevel field" || echo "  ✗ Missing newLevel field"
 echo ""
 
+# Test 8: GET /api/phrases - List phrases by level with pagination
+echo "Test 8: GET /api/phrases with level and pagination"
+PHRASES_RESPONSE=$(curl -s "$API/api/phrases?level=A1&page=1&limit=5")
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/phrases?level=A1&page=1&limit=5")
+
+[ "$HTTP_CODE" = "200" ]
+test_result $? "HTTP 200 for phrases endpoint"
+
+echo "$PHRASES_RESPONSE" | grep -q '"level":"A1"' && echo "  ✓ Has correct level"
+echo "$PHRASES_RESPONSE" | grep -q '"page":1' && echo "  ✓ Has correct page"
+echo "$PHRASES_RESPONSE" | grep -q '"limit":5' && echo "  ✓ Has correct limit"
+echo "$PHRASES_RESPONSE" | grep -q '"total":' && echo "  ✓ Has total count"
+echo "$PHRASES_RESPONSE" | grep -q '"totalPages":' && echo "  ✓ Has totalPages"
+echo "$PHRASES_RESPONSE" | grep -q '"data":\[' && echo "  ✓ Has data array"
+
+# Check if data array has items with required fields
+DATA_COUNT=$(echo "$PHRASES_RESPONSE" | grep -o '"id":' | wc -l)
+echo "  Phrases returned: $DATA_COUNT (expected 5 or less)"
+[ "$DATA_COUNT" -le 5 ] && echo -e "  ${GREEN}✓ Correct or fewer items${NC}" || echo -e "  ${RED}✗ Too many items${NC}"
+
+# Test invalid parameters
+echo "Test 8B: GET /api/phrases without level (should fail)"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/phrases?page=1&limit=5")
+[ "$HTTP_CODE" = "400" ]
+test_result $? "HTTP 400 without level parameter"
+
+echo "Test 8C: GET /api/phrases with invalid limit"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/phrases?level=A1&limit=150")
+[ "$HTTP_CODE" = "400" ]
+test_result $? "HTTP 400 with limit > 100"
+echo ""
+
+# Test 8: GET /api/phrases with pagination
+echo "Test 8: GET /api/phrases with pagination"
+PHRASES_RESPONSE=$(curl -s "$API/api/phrases?level=A1&page=1&limit=10")
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/phrases?level=A1&page=1&limit=10")
+
+[ "$HTTP_CODE" = "200" ]
+test_result $? "HTTP 200 for phrases endpoint"
+
+echo "$PHRASES_RESPONSE" | grep -q '"level":"A1"' && echo "  ✓ Has level field"
+echo "$PHRASES_RESPONSE" | grep -q '"total":' && echo "  ✓ Has total count"
+echo "$PHRASES_RESPONSE" | grep -q '"page":1' && echo "  ✓ Has page info"
+echo "$PHRASES_RESPONSE" | grep -q '"totalPages":' && echo "  ✓ Has totalPages"
+echo "$PHRASES_RESPONSE" | grep -q '"data":\[' && echo "  ✓ Has data array"
+
+PHRASE_COUNT=$(echo "$PHRASES_RESPONSE" | grep -o '"id":"' | wc -l)
+echo -e "${YELLOW}  Phrases count: $PHRASE_COUNT (expected 10)${NC}"
+[ "$PHRASE_COUNT" = "10" ] && echo -e "  ${GREEN}✓ Correct count${NC}" || echo -e "  ${RED}✗ Wrong count${NC}"
+echo ""
+
+# Test 8B: GET /api/phrases without level (should fail)
+echo "Test 8B: GET /api/phrases without level (should return 400)"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/phrases")
+[ "$HTTP_CODE" = "400" ]
+test_result $? "HTTP 400 when level missing"
+echo ""
+
+# Test 8C: GET /api/phrases with invalid limit
+echo "Test 8C: GET /api/phrases with invalid limit (should return 400)"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/phrases?level=A1&limit=150")
+[ "$HTTP_CODE" = "400" ]
+test_result $? "HTTP 400 when limit > 100"
+echo ""
+
 # Summary
 echo -e "${YELLOW}=== Summary ===${NC}"
 echo -e "${GREEN}Passed: $PASS${NC}"
