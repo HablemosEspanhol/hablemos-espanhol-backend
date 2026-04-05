@@ -1,10 +1,12 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import swaggerUi from 'swagger-ui-express';
 import Logger from './core/Logger.js';
 import OllamaChecker from './core/OllamaChecker.js';
 import QuestionsCacheLoader from './core/QuestionsCacheLoader.js';
 import WordLoader from './core/WordLoader.js';
 import exercisesRoutes from './routes/exercises.routes.js';
+import swaggerDocument from './docs/swagger.js';
 
 const port = 3000;
 const app = express();
@@ -14,6 +16,9 @@ app.use(cookieParser());
 OllamaChecker.checkModels();
 QuestionsCacheLoader.pollingQuestions();
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.get('/api-docs.json', (req, res) => res.json(swaggerDocument));
+
 app.get('/', async (req, res) => {
     res.send({
         message: "Lista de Lições aleatorias de Espanhol",
@@ -22,8 +27,6 @@ app.get('/', async (req, res) => {
 });
 
 app.use('/api', exercisesRoutes);
-
-
 
 app.use((err, req, res, next) => {
     Logger.error(err);

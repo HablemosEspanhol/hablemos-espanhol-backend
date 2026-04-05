@@ -1,0 +1,194 @@
+const swaggerDocument = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Hablemos Espanhol Backend API',
+    version: '1.0.0',
+    description: 'API para gerar exercícios de espanhol, submeter resultados e acompanhar progresso de usuário.',
+    contact: {
+      name: 'Hablemos Espanhol',
+      email: 'suporte@example.com'
+    }
+  },
+  servers: [
+    {
+      url: 'http://localhost:3000',
+      description: 'Servidor local'
+    }
+  ],
+  paths: {
+    '/': {
+      get: {
+        summary: 'Rota raiz',
+        description: 'Retorna uma lista de perguntas aleatórias em cache.',
+        responses: {
+          '200': {
+            description: 'Retorna mensagem e lista de perguntas aleatórias',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: { type: 'string' },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          front: { type: 'string' },
+                          back: { type: 'string' }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/exercises': {
+      get: {
+        tags: ['Exercises'],
+        summary: 'Gerar exercícios para um usuário',
+        description: 'Retorna um conjunto de exercícios mistos baseado no nível do usuário.',
+        parameters: [
+          {
+            name: 'username',
+            in: 'query',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Nome de usuário que identifica o aluno'
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'Lista de exercícios gerados',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Exercise' }
+                }
+              }
+            }
+          },
+          '400': {
+            description: 'Parâmetro username ausente',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          },
+          '500': {
+            description: 'Erro interno do servidor',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/exercises/submit': {
+      post: {
+        tags: ['Exercises'],
+        summary: 'Enviar resultados de exercícios',
+        description: 'Recebe as respostas do usuário e atualiza o progresso em memória.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/SubmitRequest' }
+            }
+          }
+        },
+        responses: {
+          '200': {
+            description: 'Resultado do envio e progresso atualizado',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/SubmitResponse' }
+              }
+            }
+          },
+          '400': {
+            description: 'Requisição inválida',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          },
+          '500': {
+            description: 'Erro interno do servidor',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  components: {
+    schemas: {
+      Exercise: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', format: 'uuid' },
+          type: { type: 'string', enum: ['translation', 'fill_blank', 'multiple_choice'] },
+          question: { type: 'string' },
+          options: {
+            type: 'array',
+            items: { type: 'string' },
+            nullable: true
+          },
+          correctAnswer: { type: 'string' },
+          palavra: { type: 'string' }
+        },
+        required: ['id', 'type', 'question', 'correctAnswer']
+      },
+      SubmitAnswer: {
+        type: 'object',
+        properties: {
+          exerciseId: { type: 'string' },
+          correct: { type: 'boolean' }
+        },
+        required: ['exerciseId', 'correct']
+      },
+      SubmitRequest: {
+        type: 'object',
+        properties: {
+          username: { type: 'string' },
+          answers: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/SubmitAnswer' }
+          }
+        },
+        required: ['username', 'answers']
+      },
+      SubmitResponse: {
+        type: 'object',
+        properties: {
+          accuracy: { type: 'integer', description: 'Porcentagem de acerto' },
+          newLevel: { type: 'string' },
+          message: { type: 'string' }
+        },
+        required: ['accuracy', 'newLevel', 'message']
+      },
+      ErrorResponse: {
+        type: 'object',
+        properties: {
+          error: { type: 'string' }
+        },
+        required: ['error']
+      }
+    }
+  }
+};
+
+export default swaggerDocument;
