@@ -301,12 +301,37 @@ function getPhrasesForExercises(level, amount) {
   return selected;
 }
 
+function getAllPhrasesForLevel(level) {
+  const phrases = [];
+  if (!questionFromWordCache[level]) {
+    return phrases;
+  }
+  
+  for (const word in questionFromWordCache[level]) {
+    const data = questionFromWordCache[level][word];
+    if (data.frases && Array.isArray(data.frases)) {
+      data.frases.forEach((frase, index) => {
+        phrases.push({
+          id: `${level}-${word}-${index}`,
+          palavra: data.palavra,
+          texto: frase.texto,
+          traduccion: frase.traduccion,
+          nivel: level
+        });
+      });
+    }
+  }
+  
+  return phrases;
+}
+
 function QuestionsCacheLoader() {
   return {
     getQuestions,
     pollingQuestions,
     generateQuestionsFromWords,
-    getPhrasesForExercises
+    getPhrasesForExercises,
+    getAllPhrasesForLevel
   }
 }
 

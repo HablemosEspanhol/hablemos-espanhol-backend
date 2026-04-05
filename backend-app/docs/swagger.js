@@ -92,6 +92,60 @@ const swaggerDocument = {
         }
       }
     },
+    '/api/phrases': {
+      get: {
+        tags: ['Phrases'],
+        summary: 'Listar frases por nível com paginação',
+        description: 'Retorna todas as frases mapeadas para um nível específico, com paginação para curadoria.',
+        parameters: [
+          {
+            name: 'level',
+            in: 'query',
+            required: true,
+            schema: { type: 'string', enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] },
+            description: 'Nível de dificuldade das frases'
+          },
+          {
+            name: 'page',
+            in: 'query',
+            schema: { type: 'integer', minimum: 1, default: 1 },
+            description: 'Número da página (começando em 1)'
+          },
+          {
+            name: 'limit',
+            in: 'query',
+            schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+            description: 'Número de frases por página'
+          }
+        ],
+        responses: {
+          '200': {
+            description: 'Lista paginada de frases',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/PhrasesResponse' }
+              }
+            }
+          },
+          '400': {
+            description: 'Parâmetros inválidos',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          },
+          '500': {
+            description: 'Erro interno do servidor',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          }
+        }
+      }
+    },
     '/api/exercises/submit': {
       post: {
         tags: ['Exercises'],
@@ -181,6 +235,32 @@ const swaggerDocument = {
           message: { type: 'string' }
         },
         required: ['accuracy', 'newLevel', 'message']
+      },
+      PhrasesResponse: {
+        type: 'object',
+        properties: {
+          level: { type: 'string' },
+          total: { type: 'integer' },
+          page: { type: 'integer' },
+          limit: { type: 'integer' },
+          totalPages: { type: 'integer' },
+          data: {
+            type: 'array',
+            items: { $ref: '#/components/schemas/Phrase' }
+          }
+        },
+        required: ['level', 'total', 'page', 'limit', 'totalPages', 'data']
+      },
+      Phrase: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+          palavra: { type: 'string' },
+          texto: { type: 'string' },
+          traduccion: { type: 'string' },
+          nivel: { type: 'string' }
+        },
+        required: ['id', 'palavra', 'texto', 'traduccion', 'nivel']
       },
       ErrorResponse: {
         type: 'object',
