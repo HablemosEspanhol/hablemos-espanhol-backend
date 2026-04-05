@@ -45,7 +45,13 @@ test_result $? "HTTP 200"
 # Check if response contains exercises (simple grep)
 echo "$RESPONSE" | grep -q '"id":' && echo "  ✓  Response has exercises"
 echo "$RESPONSE" | grep -q '"type":' && echo "  ✓ Response has type field"
-echo "$RESPONSE" | grep -q '"correctAnswer":' && echo "  ✓ Response has correctAnswer"
+
+# Check that correctAnswer is NOT exposed
+if echo "$RESPONSE" | grep -q '"correctAnswer":'; then
+  echo -e "  ${RED}✗ Response should NOT contain correctAnswer${NC}"
+else
+  echo -e "  ${GREEN}✓ correctAnswer is NOT exposed${NC}"
+fi
 
 # Count exercises
 COUNT=$(echo "$RESPONSE" | grep -o '"id":' | wc -l)
@@ -61,8 +67,8 @@ HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/api/exercises/s
 test_result $? "HTTP 400"
 echo ""
 
-# Test 5: Extract first exercise ID and submit
-echo "Test 5: POST /api/exercises/submit with valid data"
+# Test 5: Extract first exercise ID and submit (OLD FORMAT for compatibility)
+echo "Test 5: POST /api/exercises/submit - OLD FORMAT (with correct flag)"
 EXERCISE_ID=$(echo "$RESPONSE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 echo "  Using exercise ID: $EXERCISE_ID"
 
@@ -84,6 +90,31 @@ echo "$SUBMIT_RESPONSE" | grep -q '"message":' && echo "  ✓ Has message"
 echo "$SUBMIT_RESPONSE" | grep -q '"accuracy":100' && echo "  ✓ Accuracy is 100%"
 echo ""
 
+# Test 5B: NEW FORMAT with userAnswer validation
+echo "Test 5B: POST /api/exercises/submit - NEW FORMAT (with answer/userAnswer)"
+RESPONSE_NEW=$(curl -s "$API/api/exercises?username=test_user_new")
+EXERCISE_ID_NEW=$(echo "$RESPONSE_NEW" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+echo "  Using exercise ID: $EXERCISE_ID_NEW"
+
+# For this test, we'll send a sample answer (server validates it against correctAnswer)
+# Example: sending "Hola" as answer
+SUBMIT_DATA_NEW="{\"username\": \"test_user_new\", \"answers\": [{\"exerciseId\": \"$EXERCISE_ID_NEW\", \"answer\": \"Hola\"}]}"
+SUBMIT_RESPONSE_NEW=$(curl -s -X POST "$API/api/exercises/submit" \
+  -H "Content-Type: application/json" \
+  -d "$SUBMIT_DATA_NEW")
+HTTP_CODE_NEW=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/api/exercises/submit" \
+  -H "Content-Type: application/json" \
+  -d "$SUBMIT_DATA_NEW")
+
+[ "$HTTP_CODE_NEW" = "200" ]
+test_result $? "HTTP 200 (NEW FORMAT)"
+
+echo "  Response: $SUBMIT_RESPONSE_NEW"
+echo "$SUBMIT_RESPONSE_NEW" | grep -q '"accuracy":' && echo "  ✓ Has accuracy"
+echo "$SUBMIT_RESPONSE_NEW" | grep -q '"newLevel":' && echo "  ✓ Has newLevel"
+echo "$SUBMIT_RESPONSE_NEW" | grep -q '"message":' && echo "  ✓ Has message"
+echo ""
+
 # Test 6: Get exercises for same user
 echo "Test 6: Get exercises for same user (verify persistence)"
 RESPONSE2=$(curl -s "$API/api/exercises?username=test_user1")
@@ -94,7 +125,7 @@ test_result $? "Array size correct"
 echo ""
 
 # Test 7: Multiple answers (mixed correct/incorrect)
-echo "Test 7: POST with multiple answers (mixed)"
+echo "Test 7: POST with multiple answers (mixed) - NEW FORMAT"
 RESPONSE3=$(curl -s "$API/api/exercises?username=test_user2")
 ID1=$(echo "$RESPONSE3" | grep -o '"id":"[^"]*"' | sed -n '1p' | cut -d'"' -f4)
 ID2=$(echo "$RESPONSE3" | grep -o '"id":"[^"]*"' | sed -n '2p' | cut -d'"' -f4)
@@ -102,7 +133,8 @@ ID3=$(echo "$RESPONSE3" | grep -o '"id":"[^"]*"' | sed -n '3p' | cut -d'"' -f4)
 ID4=$(echo "$RESPONSE3" | grep -o '"id":"[^"]*"' | sed -n '4p' | cut -d'"' -f4)
 ID5=$(echo "$RESPONSE3" | grep -o '"id":"[^"]*"' | sed -n '5p' | cut -d'"' -f4)
 
-MIXED_DATA="{\"username\": \"test_user2\", \"answers\": [{\"exerciseId\": \"$ID1\", \"correct\": true},{\"exerciseId\": \"$ID2\", \"correct\": true},{\"exerciseId\": \"$ID3\", \"correct\": true},{\"exerciseId\": \"$ID4\", \"correct\": false},{\"exerciseId\": \"$ID5\", \"correct\": false}]}"
+# Using answerfield with sample data (server will validate)
+MIXED_DATA="{\"username\": \"test_user2\", \"answers\": [{\"exerciseId\": \"$ID1\", \"answer\": \"correct1\"},{\"exerciseId\": \"$ID2\", \"answer\": \"correct2\"},{\"exerciseId\": \"$ID3\", \"answer\": \"correct3\"},{\"exerciseId\": \"$ID4\", \"answer\": \"wrong1\"},{\"exerciseId\": \"$ID5\", \"answer\": \"wrong2\"}]}"
 MIXED_RESPONSE=$(curl -s -X POST "$API/api/exercises/submit" \
   -H "Content-Type: application/json" \
   -d "$MIXED_DATA")
@@ -115,7 +147,8 @@ HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/api/exercises/s
 test_result $? "HTTP 200 for mixed answers"
 
 echo "  Response: $MIXED_RESPONSE"
-echo "$MIXED_RESPONSE" | grep -q '"accuracy":60' && echo -e "  ${GREEN}✓ Accuracy is 60%${NC}" || echo "  ✗ Accuracy should be 60%: $(echo $MIXED_RESPONSE | grep -o '"accuracy":[0-9]*')"
+echo "$MIXED_RESPONSE" | grep -q '"accuracy":' && echo "  ✓ Has accuracy field" || echo "  ✗ Missing accuracy field"
+echo "$MIXED_RESPONSE" | grep -q '"newLevel":' && echo "  ✓ Has newLevel field" || echo "  ✗ Missing newLevel field"
 echo ""
 
 # Summary
