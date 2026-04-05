@@ -21,7 +21,8 @@ function storeExercises(exercises) {
   exercises.forEach(exercise => {
     exerciseStore.set(exercise.id, {
       palavra: exercise.palavra,
-      type: exercise.type
+      type: exercise.type,
+      correctAnswer: exercise.correctAnswer
     });
   });
 }
@@ -30,14 +31,31 @@ function updateProgress(username, answers) {
   const user = getOrCreateUser(username);
   let acertos = 0;
   answers.forEach(answer => {
-    const correct = answer.correct;
+    const exerciseData = exerciseStore.get(answer.exerciseId);
+    let correct = false;
+    let userAnswer = undefined;
+
+    if (answer && typeof answer === 'object') {
+      if ('answer' in answer) {
+        userAnswer = answer.answer;
+      } else if ('userAnswer' in answer) {
+        userAnswer = answer.userAnswer;
+      }
+      if (typeof answer.correct === 'boolean') {
+        correct = answer.correct;
+      }
+    }
+
+    if (exerciseData && typeof userAnswer !== 'undefined') {
+      correct = String(userAnswer).trim() === String(exerciseData.correctAnswer).trim();
+    }
+
     if (correct) acertos++;
     user.totalAcertos += correct ? 1 : 0;
     user.totalErros += correct ? 0 : 1;
     user.ultimaAtividade = new Date();
 
     // Update wordsSeen
-    const exerciseData = exerciseStore.get(answer.exerciseId);
     if (exerciseData) {
       const word = exerciseData.palavra;
       if (!user.wordsSeen.has(word)) {
@@ -51,6 +69,7 @@ function updateProgress(username, answers) {
     // Store result
     userResults.get(username).push({
       exerciseId: answer.exerciseId,
+      userAnswer,
       correct,
       timestamp: new Date()
     });

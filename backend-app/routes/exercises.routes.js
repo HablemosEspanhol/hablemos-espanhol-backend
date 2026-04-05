@@ -25,7 +25,8 @@ router.get('/exercises', async (req, res) => {
     const exercises = ExerciseService.generateExercises(phrases);
     UserProgressService.storeExercises(exercises);
 
-    res.json(exercises);
+    const publicExercises = exercises.map(({ correctAnswer, ...exercise }) => exercise);
+    res.json(publicExercises);
   } catch (error) {
     Logger.error('Error generating exercises:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -36,7 +37,11 @@ router.get('/exercises', async (req, res) => {
 router.post('/exercises/submit', (req, res) => {
   try {
     const { username, answers } = req.body;
-    if (!username || !answers || !Array.isArray(answers)) {
+    const invalidAnswer = Array.isArray(answers)
+      ? answers.some(answer => !answer || !answer.exerciseId || (typeof answer.answer === 'undefined' && typeof answer.userAnswer === 'undefined' && typeof answer.correct === 'undefined'))
+      : true;
+
+    if (!username || !answers || !Array.isArray(answers) || invalidAnswer) {
       return res.status(400).json({ error: 'Invalid request body' });
     }
 

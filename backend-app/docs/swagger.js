@@ -147,18 +147,20 @@ const swaggerDocument = {
             items: { type: 'string' },
             nullable: true
           },
-          correctAnswer: { type: 'string' },
+          correctAnswer: { type: 'string', description: 'Campo interno usado pelo backend para validações; não é retornado no GET /api/exercises' },
           palavra: { type: 'string' }
         },
-        required: ['id', 'type', 'question', 'correctAnswer']
+        required: ['id', 'type', 'question']
       },
       SubmitAnswer: {
         type: 'object',
         properties: {
           exerciseId: { type: 'string' },
-          correct: { type: 'boolean' }
+          answer: { type: 'string', description: 'Resposta enviada pelo usuário' },
+          userAnswer: { type: 'string', description: 'Resposta enviada pelo usuário (alias)' },
+          correct: { type: 'boolean', description: 'Campo opcional para compatibilidade com cliente antigo' }
         },
-        required: ['exerciseId', 'correct']
+        required: ['exerciseId']
       },
       SubmitRequest: {
         type: 'object',
