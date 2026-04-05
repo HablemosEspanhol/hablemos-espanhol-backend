@@ -269,11 +269,44 @@ async function generateQuestionsFromWords(words, nivel) {
   return resultados;
 }
 
+function getPhrasesForExercises(level, amount) {
+  const allPhrases = [];
+  if (!questionFromWordCache[level]) {
+    return allPhrases; // empty if level not found
+  }
+  for (const word in questionFromWordCache[level]) {
+    const data = questionFromWordCache[level][word];
+    if (data.frases) {
+      data.frases.forEach(frase => {
+        allPhrases.push({
+          palavra: data.palavra,
+          texto: frase.texto,
+          traduccion: frase.traduccion
+        });
+      });
+    }
+  }
+  // Shuffle and take unique up to amount
+  const shuffled = allPhrases.sort(() => Math.random() - 0.5);
+  const selected = [];
+  const seen = new Set();
+  for (const phrase of shuffled) {
+    if (selected.length >= amount) break;
+    const key = `${phrase.texto}-${phrase.traduccion}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      selected.push(phrase);
+    }
+  }
+  return selected;
+}
+
 function QuestionsCacheLoader() {
   return {
     getQuestions,
     pollingQuestions,
-    generateQuestionsFromWords
+    generateQuestionsFromWords,
+    getPhrasesForExercises
   }
 }
 
