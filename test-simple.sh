@@ -216,6 +216,37 @@ HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/phrases?level=A1&li
 test_result $? "HTTP 400 when limit > 100"
 echo ""
 
+# Test 9: POST /api/chat - Chat com tutor
+echo "Test 9: POST /api/chat - Chat com tutor de espanhol"
+CHAT_RESPONSE=$(curl -s -X POST "$API/api/chat" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test_chat", "message": "Como posso melhorar meu espanhol?"}')
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/api/chat" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test_chat", "message": "Como posso melhorar meu espanhol?"}')
+
+[ "$HTTP_CODE" = "200" ]
+test_result $? "HTTP 200 for chat endpoint"
+
+echo "$CHAT_RESPONSE" | grep -q '"success":true' && echo "  ✓ Response success is true"
+echo "$CHAT_RESPONSE" | grep -q '"message":' && echo "  ✓ Has message from tutor"
+echo "$CHAT_RESPONSE" | grep -q '"username":"test_chat"' && echo "  ✓ Has correct username"
+echo "$CHAT_RESPONSE" | grep -q '"timestamp":' && echo "  ✓ Has timestamp"
+
+# Show tutor response (truncated)
+TUTOR_MSG=$(echo "$CHAT_RESPONSE" | grep -o '"message":"[^"]*' | cut -d'"' -f4 | head -c 100)
+echo -e "${YELLOW}  Tutor response: ${TUTOR_MSG}...${NC}"
+echo ""
+
+# Test 9B: POST /api/chat without message
+echo "Test 9B: POST /api/chat without message (should return 400)"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/api/chat" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test_chat"}')
+[ "$HTTP_CODE" = "400" ]
+test_result $? "HTTP 400 when message missing"
+echo ""
+
 # Summary
 echo -e "${YELLOW}=== Summary ===${NC}"
 echo -e "${GREEN}Passed: $PASS${NC}"

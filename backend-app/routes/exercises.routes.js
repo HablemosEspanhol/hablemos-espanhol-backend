@@ -2,6 +2,7 @@ import express from 'express';
 import QuestionsCacheLoader from '../core/QuestionsCacheLoader.js';
 import ExerciseService from '../services/ExerciseService.js';
 import UserProgressService from '../services/UserProgressService.js';
+import ChatService from '../services/ChatService.js';
 import Logger from '../core/Logger.js';
 
 const router = express.Router();
@@ -102,6 +103,29 @@ router.post('/exercises/submit', (req, res) => {
     });
   } catch (error) {
     Logger.error('Error submitting exercises:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/chat - Chat com tutor de espanhol
+router.post('/chat', async (req, res) => {
+  try {
+    const { username, message } = req.body;
+    
+    if (!username || !message) {
+      return res.status(400).json({ error: 'Username and message are required' });
+    }
+
+    const user = UserProgressService.getOrCreateUser(username);
+    const context = ChatService.generateContextFromUserProgress(user);
+    const chatResponse = await ChatService.generateResponse(message, {
+      username,
+      ...context
+    });
+
+    res.json(chatResponse);
+  } catch (error) {
+    Logger.error('Error in chat endpoint:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

@@ -146,6 +146,47 @@ const swaggerDocument = {
         }
       }
     },
+    '/api/chat': {
+      post: {
+        tags: ['Chat'],
+        summary: 'Chat com tutor de espanhol IA',
+        description: 'Conversa com um tutor de espanhol alimentado por IA. O contexto é baseado no progresso do usuário.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/ChatRequest' }
+            }
+          }
+        },
+        responses: {
+          '200': {
+            description: 'Resposta do tutor de IA',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ChatResponse' }
+              }
+            }
+          },
+          '400': {
+            description: 'Requisição inválida',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          },
+          '500': {
+            description: 'Erro interno do servidor',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          }
+        }
+      }
+    },
     '/api/exercises/submit': {
       post: {
         tags: ['Exercises'],
@@ -261,6 +302,26 @@ const swaggerDocument = {
           nivel: { type: 'string' }
         },
         required: ['id', 'palavra', 'texto', 'traduccion', 'nivel']
+      },
+      ChatRequest: {
+        type: 'object',
+        properties: {
+          username: { type: 'string', description: 'Identificador do usuário' },
+          message: { type: 'string', description: 'Mensagem do usuário para o tutor' }
+        },
+        required: ['username', 'message']
+      },
+      ChatResponse: {
+        type: 'object',
+        properties: {
+          success: { type: 'boolean' },
+          message: { type: 'string', description: 'Resposta do tutor IA' },
+          username: { type: 'string' },
+          userLevel: { type: 'string' },
+          timestamp: { type: 'string', format: 'date-time' },
+          error: { type: 'string', description: 'Mensagem de erro (se houver)' }
+        },
+        required: ['success', 'message', 'username', 'timestamp']
       },
       ErrorResponse: {
         type: 'object',
