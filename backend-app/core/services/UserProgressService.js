@@ -1,4 +1,4 @@
-import pool from '../config/database.js';
+import pool from '../../config/database.js';
 
 const DEFAULT_LEVEL = 'A1';
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];

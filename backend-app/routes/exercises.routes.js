@@ -1,8 +1,8 @@
 import express from 'express';
 import QuestionsCacheLoader from '../core/QuestionsCacheLoader.js';
-import ExerciseService from '../services/ExerciseService.js';
-import UserProgressService from '../services/UserProgressService.js';
-import ChatService from '../services/ChatService.js';
+import ExerciseService from '../core/services/ExerciseService.js';
+import UserProgressService from '../core/services/UserProgressService.js';
+import ChatService from '../core/services/ChatService.js';
 import Logger from '../core/Logger.js';
 
 const router = express.Router();
