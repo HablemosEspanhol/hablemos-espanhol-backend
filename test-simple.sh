@@ -6,7 +6,8 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-API="http://localhost:3000"
+# API="http://localhost:3000"
+API="http://192.168.15.14:3000"
 PASS=0
 FAIL=0
 
@@ -234,7 +235,7 @@ echo "$CHAT_RESPONSE" | grep -q '"username":"test_chat"' && echo "  ✓ Has corr
 echo "$CHAT_RESPONSE" | grep -q '"timestamp":' && echo "  ✓ Has timestamp"
 
 # Show tutor response (truncated)
-TUTOR_MSG=$(echo "$CHAT_RESPONSE" | grep -o '"message":"[^"]*' | cut -d'"' -f4 | head -c 100)
+TUTOR_MSG=$(echo "$CHAT_RESPONSE" | node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(0,'utf8')); process.stdout.write((data.message||'').replace(/\s+/g,' ').trim().slice(0,100));")
 echo -e "${YELLOW}  Tutor response: ${TUTOR_MSG}...${NC}"
 echo ""
 

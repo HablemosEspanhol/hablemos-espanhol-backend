@@ -10,7 +10,8 @@ MAGENTA='\033[0;35m'
 NC='\033[0m' # No Color
 
 # Configuração
-API="http://localhost:3000"
+# API="http://localhost:3000"
+API="http://192.168.15.14:3000"
 USERNAME=""
 HISTORY_FILE="$HOME/.hablemos_chat_history"
 
@@ -56,9 +57,9 @@ send_message() {
 
   # Validar resposta
   if echo "$response" | grep -q '"success":true'; then
-    # Extrair mensagem do tutor
-    local tutor_message=$(echo "$response" | grep -o '"message":"[^"]*' | cut -d'"' -f4)
-    local user_level=$(echo "$response" | grep -o '"userLevel":"[^"]*' | cut -d'"' -f4)
+    # Extrair mensagem do tutor com JSON seguro
+    local tutor_message=$(echo "$response" | node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(0,'utf8')); process.stdout.write((data.message||'').replace(/\s+/g,' ').trim());")
+    local user_level=$(echo "$response" | node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(0,'utf8')); process.stdout.write(data.userLevel||'A1');")
     
     # Exibir resposta
     echo -e "${MAGENTA}👤 Você:${NC} $message\n"
