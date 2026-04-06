@@ -73,8 +73,18 @@ async function storeExercises(username, exercises) {
     return;
   }
 
+  const validExercises = exercises.filter(exercise =>
+    exercise &&
+    typeof exercise.correctAnswer === 'string' &&
+    exercise.correctAnswer.trim().length > 0
+  );
+
+  if (validExercises.length === 0) {
+    return;
+  }
+
   const user = await getOrCreateUser(username);
-  const values = exercises.map(exercise => [
+  const values = validExercises.map(exercise => [
     exercise.id,
     user.id,
     exercise.palavra,
@@ -187,7 +197,7 @@ async function getUserChatContext(username) {
   const user = await getOrCreateUser(username);
 
   const [incorrectRows] = await pool.query(
-    'SELECT DISTINCT ei.phrase FROM exercise_results er JOIN exercise_instances ei ON er.exercise_instance_id = ei.id WHERE er.user_id = ? AND er.correct = 0 ORDER BY er.submitted_at DESC LIMIT 5',
+    'SELECT ei.phrase FROM exercise_results er JOIN exercise_instances ei ON er.exercise_instance_id = ei.id WHERE er.user_id = ? AND er.correct = 0 GROUP BY ei.phrase ORDER BY MAX(er.submitted_at) DESC LIMIT 5',
     [user.id]
   );
 

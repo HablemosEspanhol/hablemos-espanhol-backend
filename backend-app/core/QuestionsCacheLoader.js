@@ -271,23 +271,42 @@ async function generateQuestionsFromWords(words, nivel) {
 
 function getPhrasesForExercises(level, amount) {
   const allPhrases = [];
-  if (!questionFromWordCache[level]) {
-    return allPhrases; // empty if level not found
-  }
-  for (const word in questionFromWordCache[level]) {
-    const data = questionFromWordCache[level][word];
-    if (data.frases) {
-      data.frases.forEach(frase => {
-        allPhrases.push({
-          palavra: data.palavra,
-          texto: frase.texto,
-          traduccion: frase.traduccion
-        });
-      });
+
+  const appendLevel = (lvl) => {
+    if (!questionFromWordCache[lvl]) {
+      return;
     }
+    for (const word in questionFromWordCache[lvl]) {
+      const data = questionFromWordCache[lvl][word];
+      if (data.frases) {
+        data.frases.forEach(frase => {
+          allPhrases.push({
+            palavra: data.palavra,
+            texto: frase.texto,
+            traduccion: frase.traduccion
+          });
+        });
+      }
+    }
+  };
+
+  appendLevel(level);
+
+  if (allPhrases.length < amount) {
+    Object.keys(questionFromWordCache).forEach(otherLevel => {
+      if (otherLevel !== level) {
+        appendLevel(otherLevel);
+      }
+    });
   }
-  // Shuffle and take unique up to amount
-  const shuffled = allPhrases.sort(() => Math.random() - 0.5);
+
+  const filtered = allPhrases.filter(phrase =>
+    phrase &&
+      typeof phrase.texto === 'string' && phrase.texto.trim() &&
+      typeof phrase.traduccion === 'string' && phrase.traduccion.trim()
+  );
+
+  const shuffled = filtered.sort(() => Math.random() - 0.5);
   const selected = [];
   const seen = new Set();
   for (const phrase of shuffled) {
@@ -298,6 +317,7 @@ function getPhrasesForExercises(level, amount) {
       selected.push(phrase);
     }
   }
+
   return selected;
 }
 

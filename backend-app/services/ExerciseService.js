@@ -1,14 +1,19 @@
 import crypto from 'crypto';
 
 function generateExercises(phrases) {
-  if (phrases.length < 10) {
-    throw new Error('Insufficient phrases for exercises');
+  const validPhrases = phrases.filter(
+    phrase => phrase &&
+      typeof phrase.texto === 'string' && phrase.texto.trim() &&
+      typeof phrase.traduccion === 'string' && phrase.traduccion.trim()
+  );
+
+  if (validPhrases.length < 10) {
+    throw new Error('Insufficient valid phrases for exercises');
   }
-  // Take first 10 phrases
-  const selectedPhrases = phrases.slice(0, 10);
+
+  const selectedPhrases = validPhrases.slice(0, 10);
   const exercises = [];
 
-  // 4 translation, 3 fill_blank, 3 multiple_choice
   const types = ['translation', 'translation', 'translation', 'translation',
                  'fill_blank', 'fill_blank', 'fill_blank',
                  'multiple_choice', 'multiple_choice', 'multiple_choice'];
