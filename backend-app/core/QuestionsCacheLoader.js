@@ -113,7 +113,7 @@ Se por exemplo, a frase do front for em portugues, a back deve ser em espanhol e
 
 async function pollingQuestions() {
   await loadDataFromDisc();
-  await pollingQuestionsOld();
+  // await pollingQuestionsOld();
   await pollingQuestionsByLevel();
 }
 
