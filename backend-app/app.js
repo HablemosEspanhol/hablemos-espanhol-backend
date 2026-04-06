@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
@@ -7,6 +8,8 @@ import QuestionsCacheLoader from './core/QuestionsCacheLoader.js';
 import WordLoader from './core/WordLoader.js';
 import exercisesRoutes from './routes/exercises.routes.js';
 import swaggerDocument from './docs/swagger.js';
+
+dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
 
 const port = 3000;
 const app = express();

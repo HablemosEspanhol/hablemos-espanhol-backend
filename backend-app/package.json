@@ -9,9 +9,11 @@
   "scripts": {
     "start": "node app.js"
   },
-   "dependencies": {
+  "dependencies": {
     "cookie-parser": "^1.4.7",
+    "dotenv": "^16.3.1",
     "express": "^5.2.1",
+    "mysql2": "^3.6.0",
     "swagger-ui-express": "^4.6.3"
   }
 }

@@ -15,16 +15,15 @@ router.get('/exercises', async (req, res) => {
       return res.status(400).json({ error: 'Username is required' });
     }
 
-    const userLevel = UserProgressService.getUserLevel(username);
+    const userLevel = await UserProgressService.getUserLevel(username);
     const phrases = QuestionsCacheLoader.getPhrasesForExercises(userLevel, 10);
     if (phrases.length < 10) {
-      // Fallback to A1 if insufficient
       const fallbackPhrases = QuestionsCacheLoader.getPhrasesForExercises('A1', 10);
       phrases.push(...fallbackPhrases.slice(0, 10 - phrases.length));
     }
 
     const exercises = ExerciseService.generateExercises(phrases);
-    UserProgressService.storeExercises(exercises);
+    await UserProgressService.storeExercises(username, exercises);
 
     const publicExercises = exercises.map(({ correctAnswer, ...exercise }) => exercise);
     res.json(publicExercises);
@@ -71,7 +70,7 @@ router.get('/phrases', (req, res) => {
 });
 
 // POST /api/exercises/submit
-router.post('/exercises/submit', (req, res) => {
+router.post('/exercises/submit', async (req, res) => {
   try {
     const { username, answers } = req.body;
     const invalidAnswer = Array.isArray(answers)
@@ -82,9 +81,8 @@ router.post('/exercises/submit', (req, res) => {
       return res.status(400).json({ error: 'Invalid request body' });
     }
 
-    const result = UserProgressService.updateProgress(username, answers);
-    
-    // Create message based on accuracy and level
+    const result = await UserProgressService.updateProgress(username, answers);
+
     let message = '';
     if (result.accuracy >= 80) {
       message = `Excelente! ${result.accuracy}% correto. Parabéns, você subiu para ${result.newLevel}!`;
@@ -95,7 +93,7 @@ router.post('/exercises/submit', (req, res) => {
     } else {
       message = `${result.accuracy}% correto. Você desceu para ${result.newLevel}. Tente novamente!`;
     }
-    
+
     res.json({
       accuracy: result.accuracy,
       newLevel: result.newLevel,
@@ -111,13 +109,13 @@ router.post('/exercises/submit', (req, res) => {
 router.post('/chat', async (req, res) => {
   try {
     const { username, message } = req.body;
-    
+
     if (!username || !message) {
       return res.status(400).json({ error: 'Username and message are required' });
     }
 
-    const user = UserProgressService.getOrCreateUser(username);
-    const context = ChatService.generateContextFromUserProgress(user);
+    await UserProgressService.getOrCreateUser(username);
+    const context = await UserProgressService.getUserChatContext(username);
     const chatResponse = await ChatService.generateResponse(message, {
       username,
       ...context
