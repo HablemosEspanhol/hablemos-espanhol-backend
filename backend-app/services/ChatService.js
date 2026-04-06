@@ -42,7 +42,12 @@ Instruções:
 
       const data = await response.json();
       const text = data.response || '';
-      const cleanedText = text.replace(/^[Tt]utor:\s*/, '').trim();
+      let cleanedText = text.replace(/^[Tt]utor:\s*/, '').trim();
+      cleanedText = cleanedText
+        .replace(/\\n/g, ' ')
+        .replace(/\r?\n+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
       return {
         success: true,
