@@ -16,6 +16,7 @@ app.use(cookieParser());
 OllamaChecker.checkModels();
 QuestionsCacheLoader.pollingQuestions();
 
+app.get('/', (req, res) => res.send("OK"));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.get('/api-docs.json', (req, res) => res.json(swaggerDocument));
 
