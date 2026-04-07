@@ -5,7 +5,6 @@ import swaggerUi from 'swagger-ui-express';
 import Logger from './core/Logger.js';
 import OllamaChecker from './core/OllamaChecker.js';
 import QuestionsCacheLoader from './core/QuestionsCacheLoader.js';
-import WordLoader from './core/WordLoader.js';
 import exercisesRoutes from './routes/exercises.routes.js';
 import swaggerDocument from './docs/swagger.js';
 
@@ -41,6 +40,14 @@ app.use((err, req, res, next) => {
         status: status,
         message: mensagem,
     });
+});
+
+process.on('unhandledRejection', (reason, promise) => { 
+    Logger.error('⚠️ [GlobalExceptionHandler][unhandledRejection] Rejeição não tratada em: '+ promise + ' razão: '+ reason);
+});
+
+process.on('uncaughtException', (error) => {
+    Logger.error('🚨 [GlobalExceptionHandler][uncaughtException] ERRO CRÍTICO: '+ error);
 });
 
 app.listen(port, () => {

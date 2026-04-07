@@ -1,6 +1,7 @@
 import fs from "fs/promises"
 import Logger from "./Logger.js";
 import WordLoader from "./WordLoader.js";
+import { isMock } from "../config/cmd_args.js";
 
 const File = (path) => {
   const update = async function (data) {
@@ -28,7 +29,7 @@ const File = (path) => {
 
 var questionsArray = [];
 var filePath = "/app/data/questionsArray.json";
-var filePathV2 = "/app/data/questionsArrayV2.json";
+var filePathV2 = isMock ? './app/data/questionsArrayV2.json': "/app/data/questionsArrayV2.json";
 
 var fileV1 = File(filePath);
 var fileV2 = File(filePathV2);
@@ -113,9 +114,10 @@ Se por exemplo, a frase do front for em portugues, a back deve ser em espanhol e
 
 async function pollingQuestions() {
   await loadDataFromDisc();
-  // await pollingQuestionsOld();
+  if(isMock) return Promise.resolve();
+    // await pollingQuestionsOld();
   await pollingQuestionsByLevel();
-}
+  }  
 
 async function pollingQuestionsOld() {
   while (questionsArray.length < 25) {
@@ -217,15 +219,38 @@ Formato JSON:
 
   const ollamaData = await ollamaResponse.json()
 
+  console.log("Ollama response data:", ollamaData);
+  console.log("Ollama response content:", ollamaData.response);
+
   let parsed;
   try {
+    // Tentar parse direto
     parsed = JSON.parse(ollamaData.response);
-    if (parsed.palavra === word) {
-      questionFromWordCache[nivel][word] = parsed;
-      await fileV2.update(questionFromWordCache);
+    console.log("Parsed JSON:", parsed);
+  } catch (error) {
+    console.error("Erro ao fazer parse da resposta:", error);
+    console.error("Conteúdo bruto:", ollamaData.response);
+
+    // Tentar extrair JSON do texto (caso tenha texto extra)
+    const jsonMatch = ollamaData.response.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        parsed = JSON.parse(jsonMatch[0]);
+        console.log("Parsed JSON extraído:", parsed);
+      } catch (extractError) {
+        console.error("Falha ao extrair JSON:", extractError);
+        throw new Error(`Resposta inválida da IA: ${error.message}`);
+      }
+    } else {
+      throw new Error(`Resposta inválida da IA: ${error.message}`);
     }
-  } catch {
-    throw new Error("Resposta inválida da IA");
+  }
+
+  if (parsed.palavra === word) {
+    questionFromWordCache[nivel][word] = parsed;
+    await fileV2.update(questionFromWordCache);
+  } else {
+    console.warn(`Palavra no JSON (${parsed.palavra}) não corresponde à palavra solicitada (${word})`);
   }
 
   return parsed;
