@@ -42,7 +42,7 @@ const AiRequest = (body) => {
 }
 
 async function loadDataFromDisc() {
-  questionsArray = await fileV1.load([]);
+  // questionsArray = await fileV1.load([]);
   questionFromWordCache = await fileV2.load({});
 }
 
@@ -269,7 +269,7 @@ async function generateQuestionsFromWords(words, nivel) {
   return resultados;
 }
 
-function getPhrasesForExercises(level, amount) {
+function getPhrasesForExercises(level, amount, wordsToReview) {
   const allPhrases = [];
 
   const appendLevel = (lvl) => {
@@ -309,6 +309,19 @@ function getPhrasesForExercises(level, amount) {
   const shuffled = filtered.sort(() => Math.random() - 0.5);
   const selected = [];
   const seen = new Set();
+
+  for(const wordIndex in wordsToReview){
+    var word = wordsToReview[wordIndex]
+    var filteredPhrase = shuffled.filter(x=> x.palavra == word.phrase)[0];
+    if(filteredPhrase && selected.length <= wordsToReview.length && selected.length <= amount){
+      const key = `${filteredPhrase.texto}-${filteredPhrase.traduccion}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        selected.push(filteredPhrase);
+      }
+    }
+  }
+
   for (const phrase of shuffled) {
     if (selected.length >= amount) break;
     const key = `${phrase.texto}-${phrase.traduccion}`;

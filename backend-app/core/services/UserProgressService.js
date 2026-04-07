@@ -170,6 +170,36 @@ async function updateProgress(username, answers) {
       );
     }
 
+    for (const answer of answers) {
+        const exerciseData = exerciseMap.get(answer.exerciseId);
+        if (!exerciseData) continue;
+
+        const phrase = exerciseData.phrase;
+        const correct = resultValues.find(rv => rv[1] === answer.exerciseId)?.[3] === 1; // Pega o correct do resultValues
+
+        const now = new Date();
+
+        await connection.execute(
+          `INSERT INTO user_phrase_progress 
+            (user_id, phrase, wrong_count, correct_count, last_seen_at)
+          VALUES (?, ?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE
+            wrong_count = wrong_count + IF(?, 1, 0),
+            correct_count = correct_count + IF(?, 1, 0),
+            last_seen_at = ?`,
+          [
+            user.id,
+            phrase,
+            correct ? 0 : 1,
+            correct ? 1 : 0,
+            now,            // INSERT
+            !correct,
+            correct,
+            now             // UPDATE
+          ]
+        );
+      }
+
     const accuracyDecimal = answers.length > 0 ? acertos / answers.length : 0;
     const newLevel = calculateLevelProgression(user.nivelAtual, accuracyDecimal);
     const updatedCorrect = user.totalAcertos + totalCorrect;
@@ -214,11 +244,34 @@ async function getUserChatContext(username) {
   };
 }
 
+async function getPhraseProgress(username, amount) {
+  var query = `SELECT phrase, wrong_count, correct_count, last_seen_at
+                  FROM hablemos_espanhol.user_phrase_progress UPP
+                  INNER JOIN hablemos_espanhol.users u ON (UPP.user_id = u.id)
+                  where u.username = ?`;
+
+  const [rows] = await pool.query(query, [username]);
+  return rows.map(x=> {
+    const diffMs = new Date() - new Date(x.last_seen_at);
+    const dias_sem_ver = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const dificuldade = Number(x.wrong_count) - Number(x.correct_count);
+    const score = dias_sem_ver * (1 + dificuldade);
+
+    return {
+      ...x,
+      score,
+      dias_sem_ver
+    }
+  }).sort((a, b) => a.score - b.score)
+  .slice(0, amount);
+}
+
 export default {
   getOrCreateUser,
   getUserLevel,
   storeExercises,
   updateProgress,
   getUserChatContext,
-  calculateLevelProgression
+  calculateLevelProgression,
+  getPhraseProgress
 };

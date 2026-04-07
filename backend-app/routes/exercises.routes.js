@@ -16,7 +16,9 @@ router.get('/exercises', async (req, res) => {
     }
 
     const userLevel = await UserProgressService.getUserLevel(username);
-    const phrases = QuestionsCacheLoader.getPhrasesForExercises(userLevel, 10);
+    const phrasesToReview = await UserProgressService.getPhraseProgress(username, 4);
+    console.log('phrasesToReview',phrasesToReview);
+    const phrases = QuestionsCacheLoader.getPhrasesForExercises(userLevel, 10, phrasesToReview);
     if (phrases.length < 10) {
       const fallbackPhrases = QuestionsCacheLoader.getPhrasesForExercises('A1', 10);
       phrases.push(...fallbackPhrases.slice(0, 10 - phrases.length));

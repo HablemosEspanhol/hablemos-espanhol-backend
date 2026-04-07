@@ -49,3 +49,17 @@ CREATE TABLE IF NOT EXISTS `exercise_results` (
   CONSTRAINT `fk_exercise_results_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `fk_exercise_results_exercise_instance` FOREIGN KEY (`exercise_instance_id`) REFERENCES `exercise_instances` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `user_phrase_progress` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id` BIGINT UNSIGNED NOT NULL,
+  `phrase` TEXT NOT NULL,
+  `wrong_count` INT NOT NULL DEFAULT 0,
+  `correct_count` INT NOT NULL DEFAULT 0,
+  `last_seen_at` DATETIME NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_user_phrase` (`user_id`, `phrase`(255)),
+  KEY `idx_user_id` (`user_id`),
+  CONSTRAINT `fk_user_phrase_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
