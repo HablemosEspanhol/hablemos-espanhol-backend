@@ -317,7 +317,7 @@ if ! skip_test 10; then
 # score = (wrong_count * 2) + (seconds_without_seeing)
 echo "Test 10: Smart repetition (score-based prioritization)"
 
-SRSUSER="test_srs_user"
+SRSUSER="test_srs_user_$(date +%s)_$$"
 echo ""
 echo "  PASSO 1: Fetching initial exercises for $SRSUSER"
 RESPONSE_SRS=$(curl -s "$API/api/exercises?username=$SRSUSER")

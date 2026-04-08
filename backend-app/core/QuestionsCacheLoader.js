@@ -294,7 +294,7 @@ async function generateQuestionsFromWords(words, nivel) {
   return resultados;
 }
 
-function getPhrasesForExercises(level, amount, wordsToReview) {
+function getPhrasesForExercises(level, amount, wordsToReview = []) {
   const allPhrases = [];
 
   const appendLevel = (lvl) => {
@@ -330,15 +330,31 @@ function getPhrasesForExercises(level, amount, wordsToReview) {
       typeof phrase.texto === 'string' && phrase.texto.trim() &&
       typeof phrase.traduccion === 'string' && phrase.traduccion.trim()
   );
+  const phrasesByWord = new Map();
+  for (const phrase of filtered) {
+    if (!phrasesByWord.has(phrase.palavra)) {
+      phrasesByWord.set(phrase.palavra, []);
+    }
+    phrasesByWord.get(phrase.palavra).push(phrase);
+  }
 
-  const shuffled = filtered.sort(() => Math.random() - 0.5);
+  const shuffle = (phrases) => [...phrases].sort(() => Math.random() - 0.5);
+  const shuffled = shuffle(filtered);
   const selected = [];
   const seen = new Set();
 
-  for(const wordIndex in wordsToReview){
-    var word = wordsToReview[wordIndex]
-    var filteredPhrase = shuffled.filter(x=> x.palavra == word.phrase)[0];
-    if(filteredPhrase && selected.length < wordsToReview.length && selected.length < amount){
+  for (const word of wordsToReview) {
+    if (selected.length >= amount) {
+      break;
+    }
+
+    const candidates = shuffle(phrasesByWord.get(word.phrase) || []);
+    const filteredPhrase = candidates.find(candidate => {
+      const key = `${candidate.texto}-${candidate.traduccion}`;
+      return !seen.has(key);
+    });
+
+    if (filteredPhrase) {
       const key = `${filteredPhrase.texto}-${filteredPhrase.traduccion}`;
       if (!seen.has(key)) {
         seen.add(key);

@@ -42,8 +42,7 @@ function generateExercises(phrases) {
     exercises.push(exercise);
   });
 
-  // Shuffle exercises
-  return exercises.sort(() => Math.random() - 0.5);
+  return exercises;
 }
 
 function createTranslationExercise(phrase) {
