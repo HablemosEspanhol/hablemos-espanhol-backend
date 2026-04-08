@@ -331,6 +331,9 @@ SRS_ID_C=$(echo "$RESPONSE_SRS" | grep -o '"id":"[^"]*"' | sed -n '3p' | cut -d'
 SRS_WORD_A=$(echo "$RESPONSE_SRS" | grep -o '"palavra":"[^"]*"' | sed -n '1p' | cut -d'"' -f4)
 SRS_WORD_B=$(echo "$RESPONSE_SRS" | grep -o '"palavra":"[^"]*"' | sed -n '2p' | cut -d'"' -f4)
 SRS_WORD_C=$(echo "$RESPONSE_SRS" | grep -o '"palavra":"[^"]*"' | sed -n '3p' | cut -d'"' -f4)
+SRS_CORRECT_C=$(curl -s -X POST "$API/api/exercises/check" \
+  -H "Content-Type: application/json" \
+  -d "{\"username\": \"$SRSUSER\", \"answer\": {\"exerciseId\": \"$SRS_ID_C\", \"userAnswer\": \"\"}}" | grep -o '"correctAnswer":"[^"]*"' | head -1 | cut -d'"' -f4)
 
 if [ -z "$SRS_ID_A" ] || [ -z "$SRS_ID_B" ] || [ -z "$SRS_ID_C" ] || [ -z "$SRS_WORD_A" ] || [ -z "$SRS_WORD_B" ] || [ -z "$SRS_WORD_C" ]; then
   echo -e "  ${RED}✗ Could not extract 3 exercises${NC}"
@@ -360,7 +363,7 @@ curl -s -X POST "$API/api/exercises/submit" \
 echo -e "    ${GREEN}✓ Exercise B submitted 1x (wrong) - Expected score: (1*2) + seg_sem_ver${NC}"
 
 echo "    - Submitting Exercise C (1x correct) - should NOT be prioritized..."
-SRS_DATA_C="{\"username\": \"$SRSUSER\", \"answers\": [{\"exerciseId\": \"$SRS_ID_C\", \"answer\": \"correct_answer\"}]}"
+SRS_DATA_C="{\"username\": \"$SRSUSER\", \"answers\": [{\"exerciseId\": \"$SRS_ID_C\", \"answer\": \"$SRS_CORRECT_C\"}]}"
 curl -s -X POST "$API/api/exercises/submit" \
   -H "Content-Type: application/json" \
   -d "$SRS_DATA_C" > /dev/null

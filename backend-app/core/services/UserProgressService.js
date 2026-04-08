@@ -301,14 +301,20 @@ async function getPhraseProgress(username, amount) {
   return rows.map(x=> {
     const diffMs = new Date() - new Date(x.last_seen_at);
     const seg_sem_ver = Math.floor(diffMs / 1000);
-    const score = (Number(x.wrong_count) * 2) + seg_sem_ver;
+    const wrongCount = Number(x.wrong_count);
+    const correctCount = Number(x.correct_count);
+    const hasOnlyCorrectAnswers = wrongCount === 0 && correctCount > 0;
+    const isInRecentCooldown = hasOnlyCorrectAnswers && seg_sem_ver < 300;
+    const score = isInRecentCooldown ? -1 : (wrongCount * 2) + seg_sem_ver;
 
     return {
       ...x,
       score,
-      seg_sem_ver
+      seg_sem_ver,
+      isInRecentCooldown
     }
-  }).sort((a, b) => b.score - a.score)
+  }).filter(x => x.score >= 0)
+  .sort((a, b) => b.score - a.score)
   .slice(0, amount);
 }
 
