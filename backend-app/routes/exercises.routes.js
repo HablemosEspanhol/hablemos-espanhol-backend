@@ -107,6 +107,33 @@ router.post('/exercises/submit', async (req, res) => {
   }
 });
 
+// POST /api/exercises/check
+router.post('/exercises/check', async (req, res) => {
+  try {
+    const { username, answer } = req.body;
+
+    const hasUserAnswer = answer && (
+      typeof answer.answer !== 'undefined' ||
+      typeof answer.userAnswer !== 'undefined'
+    );
+
+    if (!username || !answer?.exerciseId || !hasUserAnswer) {
+      return res.status(400).json({ error: 'Invalid request body' });
+    }
+
+    const result = await UserProgressService.checkExerciseAnswer(username, answer);
+
+    if (!result) {
+      return res.status(404).json({ error: 'Exercise not found for user' });
+    }
+
+    res.json(result);
+  } catch (error) {
+    Logger.error('Error checking exercise:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // POST /api/chat - Chat com tutor de espanhol
 router.post('/chat', async (req, res) => {
   try {

@@ -41,7 +41,7 @@ skip_test() {
   if [ -z "$TARGET_TEST" ]; then
     return 1
   fi
-  # For subtests like 5B or 9B, also run the parent test (5 or 9)
+
   if [[ "$1" =~ ^[0-9]+[A-Z]$ ]]; then
     local base=${1%?}
     if [ "$TARGET_TEST" = "$1" ] || [ "$TARGET_TEST" = "$base" ]; then
@@ -51,7 +51,6 @@ skip_test() {
     if [ "$TARGET_TEST" = "$1" ]; then
       return 1
     fi
-    # Don't run parent test if a subtest is requested
     if [[ "$TARGET_TEST" =~ ^${1}[A-Z]$ ]]; then
       return 0
     fi
@@ -84,18 +83,15 @@ HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/exercises?username=
 [ "$HTTP_CODE" = "200" ]
 test_result $? "HTTP 200"
 
-# Check if response contains exercises (simple grep)
-echo "$RESPONSE" | grep -q '"id":' && echo "  ✓  Response has exercises"
+echo "$RESPONSE" | grep -q '"id":' && echo "  ✓ Response has exercises"
 echo "$RESPONSE" | grep -q '"type":' && echo "  ✓ Response has type field"
 
-# Check that correctAnswer is NOT exposed
 if echo "$RESPONSE" | grep -q '"correctAnswer":'; then
   echo -e "  ${RED}✗ Response should NOT contain correctAnswer${NC}"
 else
   echo -e "  ${GREEN}✓ correctAnswer is NOT exposed${NC}"
 fi
 
-# Count exercises
 COUNT=$(echo "$RESPONSE" | grep -o '"id":' | wc -l)
 echo -e "${YELLOW}  Exercises count: $COUNT (expected 10)${NC}"
 [ "$COUNT" = "10" ] && echo -e "  ${GREEN}✓ Correct count${NC}" || echo -e "  ${RED}✗ Wrong count${NC}"
@@ -112,7 +108,7 @@ test_result $? "HTTP 400"
 echo ""
 fi
 
-# Test 5: Extract first exercise ID and submit (OLD FORMAT for compatibility)
+# Test 5: OLD FORMAT
 if ! skip_test 5; then
 echo "Test 5: POST /api/exercises/submit - OLD FORMAT (with correct flag)"
 EXERCISE_ID=$(echo "$RESPONSE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
@@ -137,15 +133,13 @@ echo "$SUBMIT_RESPONSE" | grep -q '"accuracy":100' && echo "  ✓ Accuracy is 10
 echo ""
 fi
 
-# Test 5B: NEW FORMAT with userAnswer validation
+# Test 5B: NEW FORMAT
 if ! skip_test 5B; then
 echo "Test 5B: POST /api/exercises/submit - NEW FORMAT (with answer/userAnswer)"
 RESPONSE_NEW=$(curl -s "$API/api/exercises?username=test_user_new")
 EXERCISE_ID_NEW=$(echo "$RESPONSE_NEW" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
 echo "  Using exercise ID: $EXERCISE_ID_NEW"
 
-# For this test, we'll send a sample answer (server validates it against correctAnswer)
-# Example: sending "Hola" as answer
 SUBMIT_DATA_NEW="{\"username\": \"test_user_new\", \"answers\": [{\"exerciseId\": \"$EXERCISE_ID_NEW\", \"answer\": \"Hola\"}]}"
 SUBMIT_RESPONSE_NEW=$(curl -s -X POST "$API/api/exercises/submit" \
   -H "Content-Type: application/json" \
@@ -164,6 +158,54 @@ echo "$SUBMIT_RESPONSE_NEW" | grep -q '"message":' && echo "  ✓ Has message"
 echo ""
 fi
 
+# Test 5C: Check single answer without persistence
+if ! skip_test 5C; then
+echo "Test 5C: POST /api/exercises/check"
+CHECK_USERNAME="test_user_check"
+CHECK_RESPONSE_SOURCE=$(curl -s "$API/api/exercises?username=$CHECK_USERNAME")
+CHECK_EXERCISE_ID=$(echo "$CHECK_RESPONSE_SOURCE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+echo "  Using exercise ID: $CHECK_EXERCISE_ID"
+
+CHECK_DATA="{\"username\": \"$CHECK_USERNAME\", \"answer\": {\"exerciseId\": \"$CHECK_EXERCISE_ID\", \"userAnswer\": \"Hola\"}}"
+CHECK_RESPONSE=$(curl -s -X POST "$API/api/exercises/check" \
+  -H "Content-Type: application/json" \
+  -d "$CHECK_DATA")
+HTTP_CODE_CHECK=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/api/exercises/check" \
+  -H "Content-Type: application/json" \
+  -d "$CHECK_DATA")
+
+[ "$HTTP_CODE_CHECK" = "200" ]
+test_result $? "HTTP 200 for /api/exercises/check"
+
+echo "  Response: $CHECK_RESPONSE"
+echo "$CHECK_RESPONSE" | grep -q "\"exerciseId\":\"$CHECK_EXERCISE_ID\"" && echo "  ✓ Has correct exerciseId"
+echo "$CHECK_RESPONSE" | grep -q '"correctAnswer":' && echo "  ✓ Has correctAnswer"
+echo "$CHECK_RESPONSE" | grep -q '"message":' && echo "  ✓ Has message"
+echo ""
+fi
+
+# Test 5D: Check endpoint invalid payload
+if ! skip_test 5D; then
+echo "Test 5D: POST /api/exercises/check without required fields (should return 400)"
+HTTP_CODE_CHECK_INVALID=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/api/exercises/check" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test_user_check", "answer": {"exerciseId": ""}}')
+[ "$HTTP_CODE_CHECK_INVALID" = "400" ]
+test_result $? "HTTP 400 for invalid /api/exercises/check body"
+echo ""
+fi
+
+# Test 5E: Check endpoint unknown exercise
+if ! skip_test 5E; then
+echo "Test 5E: POST /api/exercises/check with unknown exerciseId (should return 404)"
+HTTP_CODE_CHECK_NOT_FOUND=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/api/exercises/check" \
+  -H "Content-Type: application/json" \
+  -d '{"username": "test_user_check", "answer": {"exerciseId": "non-existent-id", "userAnswer": "Hola"}}')
+[ "$HTTP_CODE_CHECK_NOT_FOUND" = "404" ]
+test_result $? "HTTP 404 for unknown exerciseId in /api/exercises/check"
+echo ""
+fi
+
 # Test 6: Get exercises for same user
 if ! skip_test 6; then
 echo "Test 6: Get exercises for same user (verify persistence)"
@@ -175,7 +217,7 @@ test_result $? "Array size correct"
 echo ""
 fi
 
-# Test 7: Multiple answers (mixed correct/incorrect)
+# Test 7: Multiple answers
 if ! skip_test 7; then
 echo "Test 7: POST with multiple answers (mixed) - NEW FORMAT"
 RESPONSE3=$(curl -s "$API/api/exercises?username=test_user2")
@@ -185,7 +227,6 @@ ID3=$(echo "$RESPONSE3" | grep -o '"id":"[^"]*"' | sed -n '3p' | cut -d'"' -f4)
 ID4=$(echo "$RESPONSE3" | grep -o '"id":"[^"]*"' | sed -n '4p' | cut -d'"' -f4)
 ID5=$(echo "$RESPONSE3" | grep -o '"id":"[^"]*"' | sed -n '5p' | cut -d'"' -f4)
 
-# Using answerfield with sample data (server will validate)
 MIXED_DATA="{\"username\": \"test_user2\", \"answers\": [{\"exerciseId\": \"$ID1\", \"answer\": \"correct1\"},{\"exerciseId\": \"$ID2\", \"answer\": \"correct2\"},{\"exerciseId\": \"$ID3\", \"answer\": \"correct3\"},{\"exerciseId\": \"$ID4\", \"answer\": \"wrong1\"},{\"exerciseId\": \"$ID5\", \"answer\": \"wrong2\"}]}"
 MIXED_RESPONSE=$(curl -s -X POST "$API/api/exercises/submit" \
   -H "Content-Type: application/json" \
@@ -204,7 +245,7 @@ echo "$MIXED_RESPONSE" | grep -q '"newLevel":' && echo "  ✓ Has newLevel field
 echo ""
 fi
 
-# Test 8: GET /api/phrases - List phrases by level with pagination
+# Test 8: GET /api/phrases
 if ! skip_test 8; then
 echo "Test 8: GET /api/phrases with level and pagination"
 PHRASES_RESPONSE=$(curl -s "$API/api/phrases?level=A1&page=1&limit=5")
@@ -220,12 +261,10 @@ echo "$PHRASES_RESPONSE" | grep -q '"total":' && echo "  ✓ Has total count"
 echo "$PHRASES_RESPONSE" | grep -q '"totalPages":' && echo "  ✓ Has totalPages"
 echo "$PHRASES_RESPONSE" | grep -q '"data":\[' && echo "  ✓ Has data array"
 
-# Check if data array has items with required fields
 DATA_COUNT=$(echo "$PHRASES_RESPONSE" | grep -o '"id":' | wc -l)
 echo "  Phrases returned: $DATA_COUNT (expected 5 or less)"
 [ "$DATA_COUNT" -le 5 ] && echo -e "  ${GREEN}✓ Correct or fewer items${NC}" || echo -e "  ${RED}✗ Too many items${NC}"
 
-# Test invalid parameters
 echo "Test 8B: GET /api/phrases without level (should fail)"
 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/phrases?page=1&limit=5")
 [ "$HTTP_CODE" = "400" ]
@@ -238,7 +277,7 @@ test_result $? "HTTP 400 with limit > 100"
 echo ""
 fi
 
-# Test 9: POST /api/chat - Chat com tutor
+# Test 9: POST /api/chat
 if ! skip_test 9; then
 echo "Test 9: POST /api/chat - Chat com tutor de espanhol"
 CHAT_RESPONSE=$(curl -s -X POST "$API/api/chat" \
@@ -256,8 +295,7 @@ echo "$CHAT_RESPONSE" | grep -q '"message":' && echo "  ✓ Has message from tut
 echo "$CHAT_RESPONSE" | grep -q '"username":"test_chat"' && echo "  ✓ Has correct username"
 echo "$CHAT_RESPONSE" | grep -q '"timestamp":' && echo "  ✓ Has timestamp"
 
-# Show tutor response (truncated)
-TUTOR_MSG=$(echo "$CHAT_RESPONSE" | node -e "const fs=require('fs'); const data=JSON.parse(fs.readFileSync(0,'utf8')); process.stdout.write((data.message||'').replace(/\s+/g,' ').trim().slice(0,100));")
+TUTOR_MSG=$(echo "$CHAT_RESPONSE" | sed -n 's/.*"message":"\([^"]*\)".*/\1/p' | tr -s '[:space:]' ' ' | cut -c1-100)
 echo -e "${YELLOW}  Tutor response: ${TUTOR_MSG}...${NC}"
 echo ""
 fi
@@ -273,15 +311,12 @@ test_result $? "HTTP 400 when message missing"
 echo ""
 fi
 
-# Test 10: Smart repetition (score-based prioritization)
+# Test 10: Smart repetition
 if ! skip_test 10; then
-# EXPECTED TO FAIL - Feature not implemented yet
 # This test validates that exercises with higher score are prioritized on next fetch:
-# score = (wrong_count * 2) + (days_without_seeing)
+# score = (wrong_count * 2) + (seconds_without_seeing)
 echo "Test 10: Smart repetition (score-based prioritization)"
-echo -e "${YELLOW}NOTE: This test validates TDD behavior - EXPECT TO FAIL until feature is implemented${NC}"
 
-# PASSO 1: Get initial exercises for test_srs_user
 SRSUSER="test_srs_user"
 echo ""
 echo "  PASSO 1: Fetching initial exercises for $SRSUSER"
@@ -290,25 +325,24 @@ HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/exercises?username=
 [ "$HTTP_CODE" = "200" ]
 test_result $? "HTTP 200 for initial fetch"
 
-# Extract 3 exercise IDs
 SRS_ID_A=$(echo "$RESPONSE_SRS" | grep -o '"id":"[^"]*"' | sed -n '1p' | cut -d'"' -f4)
 SRS_ID_B=$(echo "$RESPONSE_SRS" | grep -o '"id":"[^"]*"' | sed -n '2p' | cut -d'"' -f4)
 SRS_ID_C=$(echo "$RESPONSE_SRS" | grep -o '"id":"[^"]*"' | sed -n '3p' | cut -d'"' -f4)
+SRS_WORD_A=$(echo "$RESPONSE_SRS" | grep -o '"palavra":"[^"]*"' | sed -n '1p' | cut -d'"' -f4)
+SRS_WORD_B=$(echo "$RESPONSE_SRS" | grep -o '"palavra":"[^"]*"' | sed -n '2p' | cut -d'"' -f4)
+SRS_WORD_C=$(echo "$RESPONSE_SRS" | grep -o '"palavra":"[^"]*"' | sed -n '3p' | cut -d'"' -f4)
 
-if [ -z "$SRS_ID_A" ] || [ -z "$SRS_ID_B" ] || [ -z "$SRS_ID_C" ]; then
-  echo -e "  ${RED}✗ Could not extract 3 exercise IDs${NC}"
+if [ -z "$SRS_ID_A" ] || [ -z "$SRS_ID_B" ] || [ -z "$SRS_ID_C" ] || [ -z "$SRS_WORD_A" ] || [ -z "$SRS_WORD_B" ] || [ -z "$SRS_WORD_C" ]; then
+  echo -e "  ${RED}✗ Could not extract 3 exercises${NC}"
 else
   echo -e "  ${GREEN}✓ Captured Exercises:${NC}"
-  echo "    - Exercise A (target for high score): $SRS_ID_A"
-  echo "    - Exercise B (medium score):         $SRS_ID_B"
-  echo "    - Exercise C (no repetition needed): $SRS_ID_C"
+  echo "    - Exercise A (target for high score): $SRS_ID_A | word: $SRS_WORD_A"
+  echo "    - Exercise B (medium score):         $SRS_ID_B | word: $SRS_WORD_B"
+  echo "    - Exercise C (no repetition needed): $SRS_ID_C | word: $SRS_WORD_C"
 fi
 echo ""
 
-# PASSO 2: Submit answers to create history
 echo "  PASSO 2: Building exercise history (simulating user performance)"
-
-# Exercise A: Submit WRONG 3 times
 echo "    - Submitting Exercise A (3x wrong) to build high score..."
 for i in {1..3}; do
   SRS_DATA="{\"username\": \"$SRSUSER\", \"answers\": [{\"exerciseId\": \"$SRS_ID_A\", \"answer\": \"wrong_answer_$i\"}]}"
@@ -316,17 +350,15 @@ for i in {1..3}; do
     -H "Content-Type: application/json" \
     -d "$SRS_DATA" > /dev/null
 done
-echo -e "    ${GREEN}✓ Exercise A submitted 3x (wrong) - Expected score: (3*2) + time_factor${NC}"
+echo -e "    ${GREEN}✓ Exercise A submitted 3x (wrong) - Expected score: (3*2) + seg_sem_ver${NC}"
 
-# Exercise B: Submit WRONG 1 time
 echo "    - Submitting Exercise B (1x wrong) to build medium score..."
 SRS_DATA_B="{\"username\": \"$SRSUSER\", \"answers\": [{\"exerciseId\": \"$SRS_ID_B\", \"answer\": \"wrong_answer_once\"}]}"
 curl -s -X POST "$API/api/exercises/submit" \
   -H "Content-Type: application/json" \
   -d "$SRS_DATA_B" > /dev/null
-echo -e "    ${GREEN}✓ Exercise B submitted 1x (wrong) - Expected score: (1*2) + time_factor${NC}"
+echo -e "    ${GREEN}✓ Exercise B submitted 1x (wrong) - Expected score: (1*2) + seg_sem_ver${NC}"
 
-# Exercise C: Submit CORRECT (should not be prioritized)
 echo "    - Submitting Exercise C (1x correct) - should NOT be prioritized..."
 SRS_DATA_C="{\"username\": \"$SRSUSER\", \"answers\": [{\"exerciseId\": \"$SRS_ID_C\", \"answer\": \"correct_answer\"}]}"
 curl -s -X POST "$API/api/exercises/submit" \
@@ -334,11 +366,9 @@ curl -s -X POST "$API/api/exercises/submit" \
   -d "$SRS_DATA_C" > /dev/null
 echo -e "    ${GREEN}✓ Exercise C submitted 1x (correct)${NC}"
 
-# Simulate time passing (helps with dias_sem_ver factor)
 sleep 1
 echo ""
 
-# PASSO 3: Fetch new exercises and analyze order
 echo "  PASSO 3: Fetching new exercises (should prioritize by score)"
 RESPONSE_SRS_2=$(curl -s "$API/api/exercises?username=$SRSUSER")
 HTTP_CODE_2=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/exercises?username=$SRSUSER")
@@ -346,40 +376,34 @@ HTTP_CODE_2=$(curl -s -o /dev/null -w "%{http_code}" "$API/api/exercises?usernam
 test_result $? "HTTP 200 for second fetch"
 echo ""
 
-# PASSO 4: Check if highest score exercise (A) appears in the new list
 echo "  PASSO 4: Validating smart repetition (score-based prioritization)"
+if echo "$RESPONSE_SRS_2" | grep -q "\"palavra\":\"$SRS_WORD_A\""; then
+  echo -e "    ${GREEN}✓ Exercise A word (highest score) FOUND in new list${NC}"
 
-# Check if Exercise A is in the response
-if echo "$RESPONSE_SRS_2" | grep -q "\"id\":\"$SRS_ID_A\""; then
-  echo -e "    ${GREEN}✓ Exercise A (highest score) FOUND in new list${NC}"
-  
-  # Try to verify position (rough check: appears in first 5)
-  FILTERED=$(echo "$RESPONSE_SRS_2" | grep -o '"id":"[^"]*"' | head -5)
-  if echo "$FILTERED" | grep -q "\"id\":\"$SRS_ID_A\""; then
-    echo -e "    ${GREEN}✓ Exercise A appears in prioritized positions (top 5)${NC}"
+  FILTERED=$(echo "$RESPONSE_SRS_2" | grep -o '"palavra":"[^"]*"' | head -5)
+  if echo "$FILTERED" | grep -q "\"palavra\":\"$SRS_WORD_A\""; then
+    echo -e "    ${GREEN}✓ Exercise A word appears in prioritized positions (top 5)${NC}"
     [ "$HTTP_CODE_2" = "200" ] && [ "$HTTP_CODE" = "200" ]
     test_result $? "Smart repetition validation PASSED"
   else
-    echo -e "    ${RED}✗ Exercise A found but not in top positions (expected top 5)${NC}"
+    echo -e "    ${RED}✗ Exercise A word found but not in top positions (expected top 5)${NC}"
     test_result 1 "Smart repetition validation FAILED - not prioritized enough"
   fi
 else
-  echo -e "    ${RED}✗ Exercise A (highest score) NOT found in new list${NC}"
+  echo -e "    ${RED}✗ Exercise A word (highest score) NOT found in new list${NC}"
   test_result 1 "Smart repetition validation FAILED - highest score not repeated"
 fi
 
-# Additional validation: Exercise B should also be present but after A
-if echo "$RESPONSE_SRS_2" | grep -q "\"id\":\"$SRS_ID_B\""; then
-  echo -e "    ${GREEN}✓ Exercise B (medium score) FOUND in new list${NC}"
+if echo "$RESPONSE_SRS_2" | grep -q "\"palavra\":\"$SRS_WORD_B\""; then
+  echo -e "    ${GREEN}✓ Exercise B word (medium score) FOUND in new list${NC}"
 else
-  echo -e "    ${YELLOW}⚠ Exercise B (medium score) not found (may be filtered out)${NC}"
+  echo -e "    ${YELLOW}⚠ Exercise B word (medium score) not found (may be filtered out)${NC}"
 fi
 
-# Exercise C should generally NOT appear (already correct)
-if echo "$RESPONSE_SRS_2" | grep -q "\"id\":\"$SRS_ID_C\""; then
-  echo -e "    ${YELLOW}⚠ Exercise C (already correct) found - may be filtered by internal logic${NC}"
+if echo "$RESPONSE_SRS_2" | grep -q "\"palavra\":\"$SRS_WORD_C\""; then
+  echo -e "    ${YELLOW}⚠ Exercise C word (already correct) found - may be filtered by internal logic${NC}"
 else
-  echo -e "    ${GREEN}✓ Exercise C (correct answer) correctly filtered out${NC}"
+  echo -e "    ${GREEN}✓ Exercise C word (correct answer) correctly filtered out${NC}"
 fi
 
 echo ""

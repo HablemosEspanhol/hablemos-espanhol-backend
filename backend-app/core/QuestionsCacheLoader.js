@@ -338,7 +338,7 @@ function getPhrasesForExercises(level, amount, wordsToReview) {
   for(const wordIndex in wordsToReview){
     var word = wordsToReview[wordIndex]
     var filteredPhrase = shuffled.filter(x=> x.palavra == word.phrase)[0];
-    if(filteredPhrase && selected.length <= wordsToReview.length && selected.length <= amount){
+    if(filteredPhrase && selected.length < wordsToReview.length && selected.length < amount){
       const key = `${filteredPhrase.texto}-${filteredPhrase.traduccion}`;
       if (!seen.has(key)) {
         seen.add(key);

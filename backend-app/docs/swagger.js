@@ -3,7 +3,7 @@ const swaggerDocument = {
   info: {
     title: 'Hablemos Espanhol Backend API',
     version: '1.0.0',
-    description: 'API para gerar exercícios de espanhol, submeter resultados e acompanhar progresso de usuário.',
+    description: 'API para gerar exercicios de espanhol, submeter resultados e acompanhar progresso de usuario.',
     contact: {
       name: 'Hablemos Espanhol',
       email: 'suporte@example.com'
@@ -19,10 +19,10 @@ const swaggerDocument = {
     '/': {
       get: {
         summary: 'Rota raiz',
-        description: 'Retorna uma lista de perguntas aleatórias em cache.',
+        description: 'Retorna uma lista de perguntas aleatorias em cache.',
         responses: {
           '200': {
-            description: 'Retorna mensagem e lista de perguntas aleatórias',
+            description: 'Retorna mensagem e lista de perguntas aleatorias',
             content: {
               'application/json': {
                 schema: {
@@ -50,20 +50,20 @@ const swaggerDocument = {
     '/api/exercises': {
       get: {
         tags: ['Exercises'],
-        summary: 'Gerar exercícios para um usuário',
-        description: 'Retorna um conjunto de exercícios mistos baseado no nível do usuário.',
+        summary: 'Gerar exercicios para um usuario',
+        description: 'Retorna um conjunto de exercicios mistos baseado no nivel do usuario.',
         parameters: [
           {
             name: 'username',
             in: 'query',
             required: true,
             schema: { type: 'string' },
-            description: 'Nome de usuário que identifica o aluno'
+            description: 'Nome de usuario que identifica o aluno'
           }
         ],
         responses: {
           '200': {
-            description: 'Lista de exercícios gerados',
+            description: 'Lista de exercicios gerados',
             content: {
               'application/json': {
                 schema: {
@@ -74,7 +74,7 @@ const swaggerDocument = {
             }
           },
           '400': {
-            description: 'Parâmetro username ausente',
+            description: 'Parametro username ausente',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -95,27 +95,27 @@ const swaggerDocument = {
     '/api/phrases': {
       get: {
         tags: ['Phrases'],
-        summary: 'Listar frases por nível com paginação',
-        description: 'Retorna todas as frases mapeadas para um nível específico, com paginação para curadoria.',
+        summary: 'Listar frases por nivel com paginacao',
+        description: 'Retorna todas as frases mapeadas para um nivel especifico, com paginacao para curadoria.',
         parameters: [
           {
             name: 'level',
             in: 'query',
             required: true,
             schema: { type: 'string', enum: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] },
-            description: 'Nível de dificuldade das frases'
+            description: 'Nivel de dificuldade das frases'
           },
           {
             name: 'page',
             in: 'query',
             schema: { type: 'integer', minimum: 1, default: 1 },
-            description: 'Número da página (começando em 1)'
+            description: 'Numero da pagina (comecando em 1)'
           },
           {
             name: 'limit',
             in: 'query',
             schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
-            description: 'Número de frases por página'
+            description: 'Numero de frases por pagina'
           }
         ],
         responses: {
@@ -128,7 +128,7 @@ const swaggerDocument = {
             }
           },
           '400': {
-            description: 'Parâmetros inválidos',
+            description: 'Parametros invalidos',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -150,7 +150,7 @@ const swaggerDocument = {
       post: {
         tags: ['Chat'],
         summary: 'Chat com tutor de espanhol IA',
-        description: 'Conversa com um tutor de espanhol alimentado por IA. O contexto é baseado no progresso do usuário.',
+        description: 'Conversa com um tutor de espanhol alimentado por IA. O contexto e baseado no progresso do usuario.',
         requestBody: {
           required: true,
           content: {
@@ -169,7 +169,7 @@ const swaggerDocument = {
             }
           },
           '400': {
-            description: 'Requisição inválida',
+            description: 'Requisicao invalida',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -190,8 +190,8 @@ const swaggerDocument = {
     '/api/exercises/submit': {
       post: {
         tags: ['Exercises'],
-        summary: 'Enviar resultados de exercícios',
-        description: 'Recebe as respostas do usuário e atualiza o progresso em memória.',
+        summary: 'Enviar resultados de exercicios',
+        description: 'Recebe as respostas do usuario e atualiza o progresso em memoria.',
         requestBody: {
           required: true,
           content: {
@@ -210,7 +210,56 @@ const swaggerDocument = {
             }
           },
           '400': {
-            description: 'Requisição inválida',
+            description: 'Requisicao invalida',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          },
+          '500': {
+            description: 'Erro interno do servidor',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          }
+        }
+      }
+    },
+    '/api/exercises/check': {
+      post: {
+        tags: ['Exercises'],
+        summary: 'Validar uma resposta de exercicio sem persistir',
+        description: 'Recebe uma resposta de exercicio, valida no servidor e retorna o gabarito sem gravar progresso.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/CheckRequest' }
+            }
+          }
+        },
+        responses: {
+          '200': {
+            description: 'Resultado da validacao da resposta',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/CheckResponse' }
+              }
+            }
+          },
+          '400': {
+            description: 'Requisicao invalida',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/ErrorResponse' }
+              }
+            }
+          },
+          '404': {
+            description: 'Exercicio nao encontrado para o usuario',
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/ErrorResponse' }
@@ -242,7 +291,7 @@ const swaggerDocument = {
             items: { type: 'string' },
             nullable: true
           },
-          correctAnswer: { type: 'string', description: 'Campo interno usado pelo backend para validações; não é retornado no GET /api/exercises' },
+          correctAnswer: { type: 'string', description: 'Campo interno usado pelo backend para validacoes; nao e retornado no GET /api/exercises' },
           palavra: { type: 'string' }
         },
         required: ['id', 'type', 'question']
@@ -251,8 +300,8 @@ const swaggerDocument = {
         type: 'object',
         properties: {
           exerciseId: { type: 'string' },
-          answer: { type: 'string', description: 'Resposta enviada pelo usuário' },
-          userAnswer: { type: 'string', description: 'Resposta enviada pelo usuário (alias)' },
+          answer: { type: 'string', description: 'Resposta enviada pelo usuario' },
+          userAnswer: { type: 'string', description: 'Resposta enviada pelo usuario (alias)' },
           correct: { type: 'boolean', description: 'Campo opcional para compatibilidade com cliente antigo' }
         },
         required: ['exerciseId']
@@ -268,6 +317,23 @@ const swaggerDocument = {
         },
         required: ['username', 'answers']
       },
+      CheckAnswer: {
+        type: 'object',
+        properties: {
+          exerciseId: { type: 'string' },
+          userAnswer: { type: 'string', description: 'Resposta enviada pelo usuario' },
+          answer: { type: 'string', description: 'Alias para resposta enviada pelo usuario' }
+        },
+        required: ['exerciseId', 'userAnswer']
+      },
+      CheckRequest: {
+        type: 'object',
+        properties: {
+          username: { type: 'string' },
+          answer: { $ref: '#/components/schemas/CheckAnswer' }
+        },
+        required: ['username', 'answer']
+      },
       SubmitResponse: {
         type: 'object',
         properties: {
@@ -276,6 +342,15 @@ const swaggerDocument = {
           message: { type: 'string' }
         },
         required: ['accuracy', 'newLevel', 'message']
+      },
+      CheckResponse: {
+        type: 'object',
+        properties: {
+          exerciseId: { type: 'string' },
+          correctAnswer: { type: 'string' },
+          message: { type: 'string' }
+        },
+        required: ['exerciseId', 'correctAnswer', 'message']
       },
       PhrasesResponse: {
         type: 'object',
@@ -306,8 +381,8 @@ const swaggerDocument = {
       ChatRequest: {
         type: 'object',
         properties: {
-          username: { type: 'string', description: 'Identificador do usuário' },
-          message: { type: 'string', description: 'Mensagem do usuário para o tutor' }
+          username: { type: 'string', description: 'Identificador do usuario' },
+          message: { type: 'string', description: 'Mensagem do usuario para o tutor' }
         },
         required: ['username', 'message']
       },

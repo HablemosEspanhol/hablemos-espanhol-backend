@@ -109,6 +109,61 @@ function calculateLevelProgression(currentLevel, accuracy) {
   return currentLevel;
 }
 
+function normalizeAnswer(value) {
+  return String(value ?? '').trim();
+}
+
+function resolveSubmittedAnswer(answer) {
+  if (typeof answer?.answer !== 'undefined') {
+    return answer.answer;
+  }
+
+  if (typeof answer?.userAnswer !== 'undefined') {
+    return answer.userAnswer;
+  }
+
+  return '';
+}
+
+async function getExerciseMapForUser(connection, userId, exerciseIds) {
+  const [exerciseRows] = await connection.query(
+    'SELECT id, correct_answer, phrase FROM exercise_instances WHERE id IN (?) AND user_id = ?',
+    [exerciseIds, userId]
+  );
+
+  return new Map(exerciseRows.map(row => [row.id, row]));
+}
+
+async function checkExerciseAnswer(username, answer) {
+  const user = await getOrCreateUser(username);
+
+  if (!answer?.exerciseId) {
+    throw new Error('Nenhum exercicio valido informado.');
+  }
+
+  const connection = await pool.getConnection();
+  try {
+    const exerciseMap = await getExerciseMapForUser(connection, user.id, [answer.exerciseId]);
+    const exerciseData = exerciseMap.get(answer.exerciseId);
+
+    if (!exerciseData) {
+      return null;
+    }
+
+    const userAnswer = resolveSubmittedAnswer(answer);
+    const correctAnswer = normalizeAnswer(exerciseData.correct_answer);
+    const isCorrect = normalizeAnswer(userAnswer) === correctAnswer;
+
+    return {
+      exerciseId: answer.exerciseId,
+      correctAnswer,
+      message: isCorrect ? 'Resposta correta.' : 'Resposta incorreta.'
+    };
+  } finally {
+    connection.release();
+  }
+}
+
 async function updateProgress(username, answers) {
   const user = await getOrCreateUser(username);
   if (!Array.isArray(answers) || answers.length === 0) {
@@ -123,11 +178,7 @@ async function updateProgress(username, answers) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    const [exerciseRows] = await connection.query(
-      'SELECT id, correct_answer, phrase FROM exercise_instances WHERE id IN (?) AND user_id = ?',
-      [exerciseIds, user.id]
-    );
-    const exerciseMap = new Map(exerciseRows.map(row => [row.id, row]));
+    const exerciseMap = await getExerciseMapForUser(connection, user.id, exerciseIds);
 
     let acertos = 0;
     let totalCorrect = 0;
@@ -135,15 +186,11 @@ async function updateProgress(username, answers) {
 
     const resultValues = answers.map(answer => {
       const exerciseData = exerciseMap.get(answer.exerciseId);
-      let userAnswer = typeof answer.answer !== 'undefined'
-        ? answer.answer
-        : typeof answer.userAnswer !== 'undefined'
-          ? answer.userAnswer
-          : '';
+      const userAnswer = resolveSubmittedAnswer(answer);
 
       let correct = false;
       if (exerciseData && typeof userAnswer !== 'undefined') {
-        correct = String(userAnswer).trim() === String(exerciseData.correct_answer).trim();
+        correct = normalizeAnswer(userAnswer) === normalizeAnswer(exerciseData.correct_answer);
       } else if (typeof answer.correct === 'boolean') {
         correct = answer.correct;
       }
@@ -253,16 +300,15 @@ async function getPhraseProgress(username, amount) {
   const [rows] = await pool.query(query, [username]);
   return rows.map(x=> {
     const diffMs = new Date() - new Date(x.last_seen_at);
-    const dias_sem_ver = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const dificuldade = Number(x.wrong_count) - Number(x.correct_count);
-    const score = dias_sem_ver * (1 + dificuldade);
+    const seg_sem_ver = Math.floor(diffMs / 1000);
+    const score = (Number(x.wrong_count) * 2) + seg_sem_ver;
 
     return {
       ...x,
       score,
-      dias_sem_ver
+      seg_sem_ver
     }
-  }).sort((a, b) => a.score - b.score)
+  }).sort((a, b) => b.score - a.score)
   .slice(0, amount);
 }
 
@@ -270,6 +316,7 @@ export default {
   getOrCreateUser,
   getUserLevel,
   storeExercises,
+  checkExerciseAnswer,
   updateProgress,
   getUserChatContext,
   calculateLevelProgression,
