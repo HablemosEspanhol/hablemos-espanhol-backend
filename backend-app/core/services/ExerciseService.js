@@ -1,5 +1,21 @@
 import crypto from 'crypto';
 
+function createStableExerciseId({ palavra }) {
+  const normalizedPayload = JSON.stringify({
+    palavra: String(palavra ?? '').trim()
+  });
+
+  return crypto.createHash('sha256').update(normalizedPayload).digest('hex').slice(0, 36);
+}
+
+function buildExercise(payload) {
+  return {
+    ...payload,
+    id: createStableExerciseId(payload),
+    instanceId: crypto.randomUUID()
+  };
+}
+
 function generateExercises(phrases) {
   const validPhrases = phrases.filter(
     phrase => phrase &&
@@ -46,13 +62,12 @@ function generateExercises(phrases) {
 }
 
 function createTranslationExercise(phrase) {
-  return {
-    id: crypto.randomUUID(),
+  return buildExercise({
     palavra: phrase.palavra,
     type: 'translation',
     question: phrase.texto,
     correctAnswer: phrase.traduccion
-  };
+  });
 }
 
 function createFillBlankExercise(phrase) {
@@ -65,13 +80,12 @@ function createFillBlankExercise(phrase) {
   const removedWord = words[removeIndex];
   words[removeIndex] = '___';
   const question = words.join(' ');
-  return {
-    id: crypto.randomUUID(),
+  return buildExercise({
     palavra: phrase.palavra,
     type: 'fill_blank',
     question,
     correctAnswer: removedWord
-  };
+  });
 }
 
 function createMultipleChoiceExercise(phrase, wrongOptions) {
@@ -83,19 +97,19 @@ function createMultipleChoiceExercise(phrase, wrongOptions) {
   }
   // Shuffle options
   const shuffledOptions = options.slice(0, 4).sort(() => Math.random() - 0.5);
-  return {
-    id: crypto.randomUUID(),
+  return buildExercise({
     palavra: phrase.palavra,
     type: 'multiple_choice',
     question: phrase.texto,
     options: shuffledOptions,
     correctAnswer: phrase.traduccion
-  };
+  });
 }
 
 function ExerciseService() {
   return {
     generateExercises,
+    createStableExerciseId,
     createTranslationExercise,
     createFillBlankExercise,
     createMultipleChoiceExercise

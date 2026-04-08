@@ -7,6 +7,7 @@ import OllamaChecker from './core/OllamaChecker.js';
 import QuestionsCacheLoader from './core/QuestionsCacheLoader.js';
 import exercisesRoutes from './routes/exercises.routes.js';
 import swaggerDocument from './docs/swagger.js';
+import UserProgressService from './core/services/UserProgressService.js';
 
 dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
 
@@ -17,6 +18,7 @@ app.use(cookieParser());
 
 OllamaChecker.checkModels();
 QuestionsCacheLoader.pollingQuestions();
+await UserProgressService.ensureExerciseSchema();
 
 app.get('/', (req, res) => res.send("OK"));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

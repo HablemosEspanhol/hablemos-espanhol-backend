@@ -85,6 +85,7 @@ async function storeExercises(username, exercises) {
 
   const user = await getOrCreateUser(username);
   const values = validExercises.map(exercise => [
+    exercise.instanceId,
     exercise.id,
     user.id,
     exercise.palavra,
@@ -93,9 +94,30 @@ async function storeExercises(username, exercises) {
   ]);
 
   await pool.query(
-    'INSERT INTO exercise_instances (id, user_id, phrase, exercise_type, correct_answer) VALUES ?',
+    'INSERT INTO exercise_instances (id, exercise_id, user_id, phrase, exercise_type, correct_answer) VALUES ?',
     [values]
   );
+}
+
+async function ensureExerciseSchema() {
+  const [columnRows] = await pool.query(
+    `SELECT COUNT(*) AS count
+       FROM information_schema.COLUMNS
+      WHERE TABLE_SCHEMA = DATABASE()
+        AND TABLE_NAME = 'exercise_instances'
+        AND COLUMN_NAME = 'exercise_id'`
+  );
+
+  if (Number(columnRows[0]?.count || 0) === 0) {
+    await pool.query(`
+      ALTER TABLE exercise_instances
+      ADD COLUMN exercise_id VARCHAR(64) NOT NULL DEFAULT '' AFTER id
+    `);
+  }
+
+  await pool.query(`
+    CREATE INDEX idx_exercise_instances_exercise_id ON exercise_instances (exercise_id)
+  `).catch(() => {});
 }
 
 function calculateLevelProgression(currentLevel, accuracy) {
@@ -127,11 +149,21 @@ function resolveSubmittedAnswer(answer) {
 
 async function getExerciseMapForUser(connection, userId, exerciseIds) {
   const [exerciseRows] = await connection.query(
-    'SELECT id, correct_answer, phrase FROM exercise_instances WHERE id IN (?) AND user_id = ?',
-    [exerciseIds, userId]
+    `SELECT ei.id AS instance_id, ei.exercise_id, ei.correct_answer, ei.phrase
+       FROM exercise_instances ei
+       INNER JOIN (
+         SELECT exercise_id, MAX(created_at) AS latest_created_at
+         FROM exercise_instances
+         WHERE exercise_id IN (?) AND user_id = ?
+         GROUP BY exercise_id
+       ) latest
+         ON latest.exercise_id = ei.exercise_id
+        AND latest.latest_created_at = ei.created_at
+      WHERE ei.exercise_id IN (?) AND ei.user_id = ?`,
+    [exerciseIds, userId, exerciseIds, userId]
   );
 
-  return new Map(exerciseRows.map(row => [row.id, row]));
+  return new Map(exerciseRows.map(row => [row.exercise_id, row]));
 }
 
 async function checkExerciseAnswer(username, answer) {
@@ -204,16 +236,18 @@ async function updateProgress(username, answers) {
 
       return [
         user.id,
-        answer.exerciseId,
+        exerciseData?.instance_id ?? null,
         userAnswer !== undefined ? String(userAnswer) : null,
         correct ? 1 : 0
       ];
     });
 
-    if (resultValues.length > 0) {
+    const validResultValues = resultValues.filter(resultValue => resultValue[1]);
+
+    if (validResultValues.length > 0) {
       await connection.query(
         'INSERT INTO exercise_results (user_id, exercise_instance_id, user_answer, correct) VALUES ?',
-        [resultValues]
+        [validResultValues]
       );
     }
 
@@ -222,7 +256,7 @@ async function updateProgress(username, answers) {
         if (!exerciseData) continue;
 
         const phrase = exerciseData.phrase;
-        const correct = resultValues.find(rv => rv[1] === answer.exerciseId)?.[3] === 1; // Pega o correct do resultValues
+        const correct = resultValues.find(rv => rv[1] === exerciseData.instance_id)?.[3] === 1;
 
         const now = new Date();
 
@@ -319,6 +353,7 @@ async function getPhraseProgress(username, amount) {
 }
 
 export default {
+  ensureExerciseSchema,
   getOrCreateUser,
   getUserLevel,
   storeExercises,

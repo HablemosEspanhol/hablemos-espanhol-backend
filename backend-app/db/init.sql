@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS `user_progress` (
 
 CREATE TABLE IF NOT EXISTS `exercise_instances` (
   `id` VARCHAR(36) NOT NULL,
+  `exercise_id` VARCHAR(64) NOT NULL,
   `user_id` BIGINT UNSIGNED NOT NULL,
   `phrase` TEXT NOT NULL,
   `exercise_type` VARCHAR(32) NOT NULL,
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS `exercise_instances` (
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `expires_at` DATETIME NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
+  KEY `idx_exercise_instances_exercise_id` (`exercise_id`),
   KEY `idx_exercise_instances_user_id` (`user_id`),
   CONSTRAINT `fk_exercise_instances_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

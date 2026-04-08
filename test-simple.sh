@@ -380,33 +380,33 @@ test_result $? "HTTP 200 for second fetch"
 echo ""
 
 echo "  PASSO 4: Validating smart repetition (score-based prioritization)"
-if echo "$RESPONSE_SRS_2" | grep -q "\"palavra\":\"$SRS_WORD_A\""; then
-  echo -e "    ${GREEN}✓ Exercise A word (highest score) FOUND in new list${NC}"
+if echo "$RESPONSE_SRS_2" | grep -q "\"id\":\"$SRS_ID_A\""; then
+  echo -e "    ${GREEN}✓ Exercise A id (highest score) FOUND in new list${NC}"
 
-  FILTERED=$(echo "$RESPONSE_SRS_2" | grep -o '"palavra":"[^"]*"' | head -5)
-  if echo "$FILTERED" | grep -q "\"palavra\":\"$SRS_WORD_A\""; then
-    echo -e "    ${GREEN}✓ Exercise A word appears in prioritized positions (top 5)${NC}"
+  FILTERED=$(echo "$RESPONSE_SRS_2" | grep -o '"id":"[^"]*"' | head -5)
+  if echo "$FILTERED" | grep -q "\"id\":\"$SRS_ID_A\""; then
+    echo -e "    ${GREEN}✓ Exercise A id appears in prioritized positions (top 5)${NC}"
     [ "$HTTP_CODE_2" = "200" ] && [ "$HTTP_CODE" = "200" ]
     test_result $? "Smart repetition validation PASSED"
   else
-    echo -e "    ${RED}✗ Exercise A word found but not in top positions (expected top 5)${NC}"
+    echo -e "    ${RED}✗ Exercise A id found but not in top positions (expected top 5)${NC}"
     test_result 1 "Smart repetition validation FAILED - not prioritized enough"
   fi
 else
-  echo -e "    ${RED}✗ Exercise A word (highest score) NOT found in new list${NC}"
+  echo -e "    ${RED}✗ Exercise A id (highest score) NOT found in new list${NC}"
   test_result 1 "Smart repetition validation FAILED - highest score not repeated"
 fi
 
-if echo "$RESPONSE_SRS_2" | grep -q "\"palavra\":\"$SRS_WORD_B\""; then
-  echo -e "    ${GREEN}✓ Exercise B word (medium score) FOUND in new list${NC}"
+if echo "$RESPONSE_SRS_2" | grep -q "\"id\":\"$SRS_ID_B\""; then
+  echo -e "    ${GREEN}✓ Exercise B id (medium score) FOUND in new list${NC}"
 else
-  echo -e "    ${YELLOW}⚠ Exercise B word (medium score) not found (may be filtered out)${NC}"
+  echo -e "    ${YELLOW}⚠ Exercise B id (medium score) not found (may be filtered out)${NC}"
 fi
 
-if echo "$RESPONSE_SRS_2" | grep -q "\"palavra\":\"$SRS_WORD_C\""; then
-  echo -e "    ${YELLOW}⚠ Exercise C word (already correct) found - may be filtered by internal logic${NC}"
+if echo "$RESPONSE_SRS_2" | grep -q "\"id\":\"$SRS_ID_C\""; then
+  echo -e "    ${YELLOW}⚠ Exercise C id (already correct) found - may be filtered by internal logic${NC}"
 else
-  echo -e "    ${GREEN}✓ Exercise C word (correct answer) correctly filtered out${NC}"
+  echo -e "    ${GREEN}✓ Exercise C id (correct answer) correctly filtered out${NC}"
 fi
 
 echo ""

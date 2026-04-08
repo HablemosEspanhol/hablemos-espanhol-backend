@@ -27,7 +27,7 @@ router.get('/exercises', async (req, res) => {
     const exercises = ExerciseService.generateExercises(phrases);
     await UserProgressService.storeExercises(username, exercises);
 
-    const publicExercises = exercises.map(({ correctAnswer, ...exercise }) => exercise);
+    const publicExercises = exercises.map(({ correctAnswer, instanceId, ...exercise }) => exercise);
     res.json(publicExercises);
   } catch (error) {
     Logger.error('Error generating exercises:', error);
