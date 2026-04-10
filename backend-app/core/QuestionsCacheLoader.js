@@ -215,12 +215,16 @@ var prompt = `write 3 short phrases (limited to 80 chars) in ${idiomaFrase} with
 
   console.log("PromptConfigs: ", consfigs);
 
-  const ollamaResponse = await AiRequest(consfigs);
 
+  
   let parsed;
-  const ollamaData = await ollamaResponse.json()
-  const response = ollamaData.response;
+  let ollamaData;
+  
   try {   
+    
+    const ollamaResponse = await AiRequest(consfigs);    
+    ollamaData = await ollamaResponse.json()
+    const response = ollamaData.response;
 
     console.log("Ollama response data:", response);
 
