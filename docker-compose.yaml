@@ -1,0 +1,49 @@
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  # ollama:
+  #   image: ollama/ollama
+  #   volumes:
+  #     - ollama:/root/.ollama
+  #   entrypoint: ["/bin/sh", "-c"]
+  #   command: >
+  #     "ollama serve &
+  #      sleep 5 &&
+  #      ollama pull phi3 &&
+  #      wait"
+
+  hablemos-espanhol-backend:
+    build:
+      context: ./backend-app
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - mysql
+      # - ollama
+    environment:
+      DB_HOST: mysql
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    volumes:
+      - app_data:/app/data
+
+volumes:
+  mysql_data:
+  ollama:
+  app_data:
