@@ -3,6 +3,10 @@ import Logger from "./Logger.js";
 import WordLoader from "./WordLoader.js";
 import { isMock } from "../config/cmd_args.js";
 
+const model = "phi3:mini";
+var url = "http://ollama:11434";
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
 const File = (path) => {
   const update = async function (data) {
     await fs.writeFile(
@@ -29,13 +33,13 @@ const File = (path) => {
 
 var questionsArray = [];
 var filePath = "/app/data/questionsArray.json";
-var filePathV2 = isMock ? './app/data/questionsArrayV2.json': "/app/data/questionsArrayV2.json";
+var filePathV2 = isMock ? './app/data/questionsArrayV2.json' : "/app/data/questionsArrayV2.json";
 
 var fileV1 = File(filePath);
 var fileV2 = File(filePathV2);
 
 const AiRequest = (body) => {
-  return fetch("http://ollama:11434/api/generate", {
+  return fetch(url+"/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
@@ -66,7 +70,7 @@ async function executeFetch() {
   Logger.info("[OLLAMA] Fazendo pooling de perguntas");
   const amountOfQuestionToPull = 3;
   const AiBody = {
-    model: "phi3",
+    model,
     stream: false,
     format: "json",
     options: {
@@ -114,10 +118,10 @@ Se por exemplo, a frase do front for em portugues, a back deve ser em espanhol e
 
 async function pollingQuestions() {
   await loadDataFromDisc();
-  if(isMock) return Promise.resolve();
-    // await pollingQuestionsOld();
+  if (isMock) return Promise.resolve();
+  // await pollingQuestionsOld();
   await pollingQuestionsByLevel();
-  }  
+}
 
 async function pollingQuestionsOld() {
   while (questionsArray.length < 25) {
@@ -139,9 +143,9 @@ async function pollingQuestionsByLevel() {
     const nivel = niveis[index];
     await checkIfNivelWasCreated(nivel);
 
-    for (let wordIndex = 0; wordIndex < words.length; wordIndex++) {      
+    for (let wordIndex = 0; wordIndex < words.length; wordIndex++) {
 
-      var word = words[wordIndex];      
+      var word = words[wordIndex];
 
       if (!questionFromWordCache[nivel][word]) {
         console.log(`-----------------------------------------------------------`);
@@ -160,8 +164,10 @@ async function pollingQuestionsByLevel() {
         console.log(`-----------------------------------------------------------`);
         console.log(`Geradas Questões para a palavra ${word} no nivel ${nivel}. Duração em minutos ${durationInMinutes}`);
         console.log(`-----------------------------------------------------------`);
+         var delaySec = 30;
+        Logger.info(`Aguardando ${delaySec} seg`)
+        await delay(delaySec * 1000);
       }
-
     }
   }
 }
@@ -173,77 +179,91 @@ async function generateQuestionsFromWord(word, nivel, idiomaFrase, idiomaTraduca
     return Promise.resolve(questionFromWordCache[nivel][word]);
   }
 
-  const prompt =
-    `Gere 3 frases para palavra abaixo.
+//   const prompt =
+//     `<<<
+// Gere exatamente 3 linhas.
 
-Regras:
-- Palavra: ${word}
-- Nivel: ${nivel}
-- Frase deve ser em ${idiomaFrase}
-- As frases devem ser naturais e usadas no dia a dia
-- Cada frase deve conter a palavra correspondente
-- Inclua tradução em ${idiomaTraducao}
-- Gere EXATAMENTE 3 frases por palavra (nem mais, nem menos)
+// Cada linha deve conter:
+// [frase em ${idiomaFrase}]; [tradução em ${idiomaTraducao}]
 
-Formato JSON:
- {
-    "palavra": "${word}",
-    "frases": [
-      {
-        "texto": "...",
-        "traduccion": "..."
-      },
-      {
-        "texto": "...",
-        "traduccion": "..."
-      },
-      {
-        "texto": "...",
-        "traduccion": "..."
-      }
-    ]
-  }
-`;
+// Regras obrigatórias:
+// - Use a palavra "${word}" em TODAS as frases
+// - Nível ${nivel} (frases simples e curtas)
+// - Apenas 1 tradução por frase
+// - NÃO use "/" ou múltiplas opções
+// - NÃO use explicações
+// - NÃO use texto extra
 
-  console.log("Prompt: ", prompt);
+// Formato EXATO (3 linhas):
+// frase; tradução
+// frase; tradução
+// frase; tradução
+// >>>`;
 
-  const ollamaResponse = await AiRequest({
-    model: "phi3",
+var prompt = `write 3 short phrases (limited to 80 chars) in ${idiomaFrase} with the word '${word}',  concat ';', concat the traslation in '${idiomaTraducao}'. each phrase need to be separed by breakline '\n'`;
+
+  var consfigs = {
+    model,
     stream: false,
-    format: "json",
     options: {
-      num_predict: 200
+      temperature: 0,
+      "top_p": 0.1,
+      "repeat_penalty": 1.2
     },
     prompt,
-  });
+  }
 
-  const ollamaData = await ollamaResponse.json()
+  console.log("PromptConfigs: ", consfigs);
 
-  console.log("Ollama response data:", ollamaData);
-  console.log("Ollama response content:", ollamaData.response);
+  const ollamaResponse = await AiRequest(consfigs);
 
   let parsed;
-  try {
-    // Tentar parse direto
-    parsed = JSON.parse(ollamaData.response);
-    console.log("Parsed JSON:", parsed);
+  const ollamaData = await ollamaResponse.json()
+  const response = ollamaData.response;
+  try {   
+
+    console.log("Ollama response data:", response);
+
+    if (!response.includes(";") || response.includes("}") || response.includes("{")) {
+      throw new Error("resposta invalida: "+ ollamaData.response)      
+    }
+
+    var frases = response
+      .split('\n')
+      .filter(l => l.includes(';'))
+      .map(x => {
+          let [texto, traduccion] = x.replaceAll('"', "").split(';');
+          traduccion = traduccion.split('/')[0].trim();
+          texto = (texto.includes(".") ? texto.split(".")[1] : texto).trim();
+
+          return {
+            texto,
+            traduccion
+          }
+        });
+    parsed = {
+      palavra: word,
+      frases
+    };
+    console.log("Parsed CSV:", parsed);
   } catch (error) {
     console.error("Erro ao fazer parse da resposta:", error);
-    console.error("Conteúdo bruto:", ollamaData.response);
+    console.error("Conteúdo bruto:", ollamaData);
+    return null;
 
-    // Tentar extrair JSON do texto (caso tenha texto extra)
-    const jsonMatch = ollamaData.response.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      try {
-        parsed = JSON.parse(jsonMatch[0]);
-        console.log("Parsed JSON extraído:", parsed);
-      } catch (extractError) {
-        console.error("Falha ao extrair JSON:", extractError);
-        throw new Error(`Resposta inválida da IA: ${error.message}`);
-      }
-    } else {
-      throw new Error(`Resposta inválida da IA: ${error.message}`);
-    }
+    // // Tentar extrair JSON do texto (caso tenha texto extra)
+    // const jsonMatch = ollamaData.response.match(/\{[\s\S]*\}/);
+    // if (jsonMatch) {
+    //   try {
+    //     parsed = JSON.parse(jsonMatch[0]);
+    //     console.log("Parsed JSON extraído:", parsed);
+    //   } catch (extractError) {
+    //     console.error("Falha ao extrair JSON:", extractError);
+    //     throw new Error(`Resposta inválida da IA: ${error.message}`);
+    //   }
+    // } else {
+    //   throw new Error(`Resposta inválida da IA: ${error.message}`);
+    // }
   }
 
   if (parsed.palavra === word) {
@@ -279,8 +299,8 @@ async function generateQuestionsFromWords(words, nivel) {
         resultados[i] = await generateQuestionsFromWord(
           words[i],
           nivel,
-          "espanhol",
-          "português"
+          "spanish",
+          "portuguese"
         );
       } catch (err) {
         resultados[i] = { error: err.message };
@@ -327,8 +347,8 @@ function getPhrasesForExercises(level, amount, wordsToReview = []) {
 
   const filtered = allPhrases.filter(phrase =>
     phrase &&
-      typeof phrase.texto === 'string' && phrase.texto.trim() &&
-      typeof phrase.traduccion === 'string' && phrase.traduccion.trim()
+    typeof phrase.texto === 'string' && phrase.texto.trim() &&
+    typeof phrase.traduccion === 'string' && phrase.traduccion.trim()
   );
   const phrasesByWord = new Map();
   for (const phrase of filtered) {
@@ -380,7 +400,7 @@ function getAllPhrasesForLevel(level) {
   if (!questionFromWordCache[level]) {
     return phrases;
   }
-  
+
   for (const word in questionFromWordCache[level]) {
     const data = questionFromWordCache[level][word];
     if (data.frases && Array.isArray(data.frases)) {
@@ -395,12 +415,14 @@ function getAllPhrasesForLevel(level) {
       });
     }
   }
-  
+
   return phrases;
 }
 
 function QuestionsCacheLoader() {
   return {
+    model,
+    setUrl: (newUrl)=> url = newUrl,
     getQuestions,
     pollingQuestions,
     generateQuestionsFromWords,

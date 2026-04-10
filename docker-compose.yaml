@@ -12,16 +12,16 @@ services:
     ports:
       - "3306:3306"
 
-  ollama:
-    image: ollama/ollama
-    volumes:
-      - ollama:/root/.ollama
-    entrypoint: ["/bin/sh", "-c"]
-    command: >
-      "ollama serve &
-       sleep 5 &&
-       ollama pull phi3 &&
-       wait"
+  # ollama:
+  #   image: ollama/ollama
+  #   volumes:
+  #     - ollama:/root/.ollama
+  #   entrypoint: ["/bin/sh", "-c"]
+  #   command: >
+  #     "ollama serve &
+  #      sleep 5 &&
+  #      ollama pull phi3 &&
+  #      wait"
 
   hablemos-espanhol-backend:
     build:
@@ -29,9 +29,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - mysql
-      - ollama
+      # - ollama
     environment:
       DB_HOST: mysql
       DB_PORT: ${DB_PORT:-3306}
