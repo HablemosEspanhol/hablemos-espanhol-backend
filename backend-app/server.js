@@ -1,0 +1,28 @@
+import app from "./app.js";
+import Logger from "./core/Logger.js";
+import OllamaChecker from "./core/OllamaChecker.js";
+import QuestionsCacheLoader from "./core/QuestionsCacheLoader.js";
+
+const port = 3000;
+const ollamanAdress = 'http://host.docker.internal:11434'
+
+async function pollingQuestions() {
+    OllamaChecker.setUrl(ollamanAdress);
+    QuestionsCacheLoader.setUrl(ollamanAdress);
+
+    if(await OllamaChecker.checkModels(QuestionsCacheLoader.model)) {
+        QuestionsCacheLoader.pollingQuestions();
+    } else {
+        Logger.error("Modelo de IA indisponivel no OLLAMA");
+        setTimeout(()=> {
+            Logger.info("RETRY pollingQuestions()")
+            pollingQuestions();
+        }, 60000)
+    }
+}
+
+pollingQuestions();
+
+app.listen(port, () => {
+    Logger.info(`Servidor rodando em http://localhost:${port}`);
+});

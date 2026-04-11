@@ -99,27 +99,6 @@ async function storeExercises(username, exercises) {
   );
 }
 
-async function ensureExerciseSchema() {
-  const [columnRows] = await pool.query(
-    `SELECT COUNT(*) AS count
-       FROM information_schema.COLUMNS
-      WHERE TABLE_SCHEMA = DATABASE()
-        AND TABLE_NAME = 'exercise_instances'
-        AND COLUMN_NAME = 'exercise_id'`
-  );
-
-  if (Number(columnRows[0]?.count || 0) === 0) {
-    await pool.query(`
-      ALTER TABLE exercise_instances
-      ADD COLUMN exercise_id VARCHAR(64) NOT NULL DEFAULT '' AFTER id
-    `);
-  }
-
-  await pool.query(`
-    CREATE INDEX idx_exercise_instances_exercise_id ON exercise_instances (exercise_id)
-  `).catch(() => {});
-}
-
 function calculateLevelProgression(currentLevel, accuracy) {
   const currentIndex = LEVELS.indexOf(currentLevel);
   if (accuracy >= 0.8) {
@@ -353,7 +332,6 @@ async function getPhraseProgress(username, amount) {
 }
 
 export default {
-  ensureExerciseSchema,
   getOrCreateUser,
   getUserLevel,
   storeExercises,

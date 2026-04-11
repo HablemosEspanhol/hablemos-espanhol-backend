@@ -11,31 +11,10 @@ import UserProgressService from './core/services/UserProgressService.js';
 
 dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
 
-const ollamanAdress = 'http://host.docker.internal:11434'
-
-const port = 3000;
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-OllamaChecker.setUrl(ollamanAdress);
-QuestionsCacheLoader.setUrl(ollamanAdress);
-
-async function pollingQuestions() {
-    if(await OllamaChecker.checkModels(QuestionsCacheLoader.model)) {
-        QuestionsCacheLoader.pollingQuestions();
-    } else {
-        Logger.error("Modelo de IA indisponivel no OLLAMA");
-        setTimeout(()=> {
-            Logger.info("RETRY pollingQuestions()")
-            pollingQuestions();
-        }, 60000)
-    }
-}
-
-pollingQuestions();
-
-await UserProgressService.ensureExerciseSchema();
 
 app.get('/', (req, res) => res.send("OK"));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -69,6 +48,5 @@ process.on('uncaughtException', (error) => {
     Logger.error('🚨 [GlobalExceptionHandler][uncaughtException] ERRO CRÍTICO: '+ error);
 });
 
-app.listen(port, () => {
-    Logger.info(`Servidor rodando em http://localhost:${port}`);
-});
+
+export default app;
