@@ -28,7 +28,7 @@ services:
       context: ./backend-app
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "${PORT}:${PORT}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
@@ -36,10 +36,11 @@ services:
       # - ollama
     environment:
       DB_HOST: mysql
-      DB_PORT: ${DB_PORT:-3306}
+      DB_PORT: ${DB_PORT}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
+      PORT: ${PORT}
     volumes:
       - app_data:/app/data
 

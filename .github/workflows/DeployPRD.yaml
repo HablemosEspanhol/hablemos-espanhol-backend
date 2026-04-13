@@ -1,0 +1,71 @@
+name: Publish API
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  # This workflow contains a single job called "build"
+  Deploy:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    - name: Publish via SSH
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.PRIVATE_KEY }}
+        port: 22        
+        script: |
+            export MYSQL_ROOT_PASSWORD='${{ secrets.DB_ROOT_PASSWORD }}'
+            export MYSQL_DATABASE=hablemos_espanhol
+            export MYSQL_USER='${{ secrets.DB_USER }}'
+            export MYSQL_PASSWORD='${{ secrets.DB_PASSWORD }}'
+            export DB_PORT=3306
+            export DB_USER='${{ secrets.DB_USER }}'
+            export DB_PASSWORD='${{ secrets.DB_PASSWORD }}'
+            export DB_NAME=hablemos_espanhol
+            export PORT=3001
+
+            cd apps
+            rmdir hablemos-espanhol-android
+            git clone git@github.com:HablemosEspanhol/hablemos-espanhol-android.git
+            cd hablemos-espanhol-android
+            
+            echo 'Update data...'
+            git checkout main
+            git pull
+            git status
+
+            sleep 5
+            echo ''
+            echo 'Publish on Docker and restart'
+            docker compose up --build -d
+
+            echo ''
+            echo 'Sucessfully Published!'
+    - name: Validando Container via SSH
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.PRIVATE_KEY }}
+        script: |
+            echo "Validando se container está OK"
+            IMAGE_NAME=hablemos-espanhol-backend-hablemos-espanhol-backend-1
+            sleep 10
+            OUTPUT=$(docker logs $IMAGE_NAME 2>&1)
+
+            echo "===== OUTPUT ====="
+            echo "$OUTPUT"
+            echo "=================="
+
+            if [[ "$OUTPUT" == *"ERROR"* ]]; then
+                echo "❌ Encontrado ERROR no output"
+                exit 1
+            else
+                echo "✅ Nenhum erro encontrado"
+            fi
