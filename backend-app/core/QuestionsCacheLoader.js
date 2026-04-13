@@ -117,7 +117,6 @@ Se por exemplo, a frase do front for em portugues, a back deve ser em espanhol e
 }
 
 async function pollingQuestions() {
-  await loadDataFromDisc();
   if (isMock) return Promise.resolve();
   // await pollingQuestionsOld();
   await pollingQuestionsByLevel();
@@ -431,7 +430,8 @@ function QuestionsCacheLoader() {
     pollingQuestions,
     generateQuestionsFromWords,
     getPhrasesForExercises,
-    getAllPhrasesForLevel
+    getAllPhrasesForLevel,
+    loadDataFromDisc
   }
 }
 

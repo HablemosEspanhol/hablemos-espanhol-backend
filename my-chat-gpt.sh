@@ -22,7 +22,7 @@ show_banner() {
   echo "╔════════════════════════════════════════════════════════╗"
   echo "║                                                        ║"
   echo "║          🎓 HABLEMOS ESPANHOL - Chat Mode 🎓          ║"
-  echo "║         Conversa com seu Tutor de Espanhol IA         ║"
+  echo "║         Conversa com seu Tutor de Espanhol IA          ║"
   echo "║                                                        ║"
   echo "╚════════════════════════════════════════════════════════╝"
   echo -e "${NC}"

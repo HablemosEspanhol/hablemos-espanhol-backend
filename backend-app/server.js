@@ -14,6 +14,9 @@ async function pollingQuestions() {
         OllamaChecker.setUrl(ollamanAdress);
         QuestionsCacheLoader.setUrl(ollamanAdress);
 
+        Logger.info("Lendo dados previamente salvos");
+        await QuestionsCacheLoader.loadDataFromDisc()
+
         if(await OllamaChecker.checkModels(QuestionsCacheLoader.model)) {
             QuestionsCacheLoader.pollingQuestions();
         } else {

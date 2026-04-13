@@ -1,0 +1,1 @@
+scp ~/Downloads/questionsArrayV2.json $1:~/temp/
