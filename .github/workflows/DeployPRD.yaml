@@ -31,12 +31,14 @@ jobs:
             export PORT=3001
 
             cd apps
-            rmdir hablemos-espanhol-android
-            git clone git@github.com:HablemosEspanhol/hablemos-espanhol-android.git
-            cd hablemos-espanhol-android
+            echo 'Delete previous repository data'
+            rm -rf ${{ github.repository }}
+
+            echo 'Cloning repository ${{ github.repository }}'
+            git clone git@github.com:${{ github.repository }}.git
+            cd ${{ github.repository }}
             
             echo 'Update data...'
-            git checkout main
             git pull
             git status
 
