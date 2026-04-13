@@ -11,7 +11,7 @@ NC='\033[0m' # No Color
 
 # Configuração
 # API="http://localhost:3000"
-API="http://192.168.15.14:3000"
+API="http://192.168.15.11:3000"
 USERNAME=""
 HISTORY_FILE="$HOME/.hablemos_chat_history"
 

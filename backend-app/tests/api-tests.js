@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const API = "http://192.168.15.14:3000";
+const API = "http://192.168.15.11:3000";
 
 const GREEN = "\x1b[0;32m";
 const RED = "\x1b[0;31m";
