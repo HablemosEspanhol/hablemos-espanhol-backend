@@ -1,15 +1,10 @@
-import dotenv from 'dotenv';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import swaggerUi from 'swagger-ui-express';
 import Logger from './core/Logger.js';
-import OllamaChecker from './core/OllamaChecker.js';
 import QuestionsCacheLoader from './core/QuestionsCacheLoader.js';
 import exercisesRoutes from './routes/exercises.routes.js';
 import swaggerDocument from './docs/swagger.js';
-import UserProgressService from './core/services/UserProgressService.js';
-
-dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
 
 const app = express();
 app.use(express.json());
