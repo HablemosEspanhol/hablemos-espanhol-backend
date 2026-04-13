@@ -6,8 +6,8 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-# API="http://localhost:3000"
-API="http://192.168.15.11:3000"
+API="http://localhost:3000"
+# API="http://192.168.15.11:3000"
 PASS=0
 FAIL=0
 TARGET_TEST=""
@@ -191,7 +191,7 @@ HTTP_CODE_CHECK_INVALID=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/a
   -H "Content-Type: application/json" \
   -d '{"username": "test_user_check", "answer": {"exerciseId": ""}}')
 [ "$HTTP_CODE_CHECK_INVALID" = "400" ]
-test_result $? "HTTP 400 for invalid /api/exercises/check body"
+test_result $? "HTTP 400 for invalid /api/exercises/check body (returned $HTTP_CODE_CHECK_INVALID)"
 echo ""
 fi
 
@@ -202,7 +202,7 @@ HTTP_CODE_CHECK_NOT_FOUND=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API
   -H "Content-Type: application/json" \
   -d '{"username": "test_user_check", "answer": {"exerciseId": "non-existent-id", "userAnswer": "Hola"}}')
 [ "$HTTP_CODE_CHECK_NOT_FOUND" = "404" ]
-test_result $? "HTTP 404 for unknown exerciseId in /api/exercises/check"
+test_result $? "HTTP 404 for unknown exerciseId in /api/exercises/check (returned $HTTP_CODE_CHECK_NOT_FOUND)"
 echo ""
 fi
 

@@ -1,4 +1,5 @@
-import pool from '../../config/database.js';
+import databasePool from "../../shared/config/database.config.js";
+
 
 const DEFAULT_LEVEL = 'A1';
 const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -15,7 +16,7 @@ function mapProgressRow(row) {
 }
 
 async function getUserProgressRow(username) {
-  const [rows] = await pool.query(
+  const [rows] = await databasePool.query(
     'SELECT u.id, u.username, up.current_level, up.total_correct, up.total_incorrect, up.last_activity FROM users u JOIN user_progress up ON u.id = up.user_id WHERE u.username = ?',
     [username]
   );
@@ -23,7 +24,7 @@ async function getUserProgressRow(username) {
 }
 
 async function createUserWithProgress(username) {
-  const connection = await pool.getConnection();
+  const connection = await databasePool.getConnection();
   try {
     await connection.beginTransaction();
     const [userResult] = await connection.query(
@@ -93,7 +94,7 @@ async function storeExercises(username, exercises) {
     exercise.correctAnswer
   ]);
 
-  await pool.query(
+  await databasePool.query(
     'INSERT INTO exercise_instances (id, exercise_id, user_id, phrase, exercise_type, correct_answer) VALUES ?',
     [values]
   );
@@ -152,7 +153,7 @@ async function checkExerciseAnswer(username, answer) {
     throw new Error('Nenhum exercicio valido informado.');
   }
 
-  const connection = await pool.getConnection();
+  const connection = await databasePool.getConnection();
   try {
     const exerciseMap = await getExerciseMapForUser(connection, user.id, [answer.exerciseId]);
     const exerciseData = exerciseMap.get(answer.exerciseId);
@@ -186,7 +187,7 @@ async function updateProgress(username, answers) {
     throw new Error('Nenhum exercício válido informado.');
   }
 
-  const connection = await pool.getConnection();
+  const connection = await databasePool.getConnection();
   try {
     await connection.beginTransaction();
     const exerciseMap = await getExerciseMapForUser(connection, user.id, exerciseIds);
@@ -286,12 +287,12 @@ async function updateProgress(username, answers) {
 async function getUserChatContext(username) {
   const user = await getOrCreateUser(username);
 
-  const [incorrectRows] = await pool.query(
+  const [incorrectRows] = await databasePool.query(
     'SELECT ei.phrase FROM exercise_results er JOIN exercise_instances ei ON er.exercise_instance_id = ei.id WHERE er.user_id = ? AND er.correct = 0 GROUP BY ei.phrase ORDER BY MAX(er.submitted_at) DESC LIMIT 5',
     [user.id]
   );
 
-  const [correctRows] = await pool.query(
+  const [correctRows] = await databasePool.query(
     'SELECT ei.phrase FROM exercise_results er JOIN exercise_instances ei ON er.exercise_instance_id = ei.id WHERE er.user_id = ? AND er.correct = 1 GROUP BY ei.phrase ORDER BY COUNT(*) DESC LIMIT 5',
     [user.id]
   );
@@ -310,7 +311,7 @@ async function getPhraseProgress(username, amount) {
                   INNER JOIN hablemos_espanhol.users u ON (UPP.user_id = u.id)
                   where u.username = ?`;
 
-  const [rows] = await pool.query(query, [username]);
+  const [rows] = await databasePool.query(query, [username]);
   return rows.map(x=> {
     const diffMs = new Date() - new Date(x.last_seen_at);
     const seg_sem_ver = Math.floor(diffMs / 1000);

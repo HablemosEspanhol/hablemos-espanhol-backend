@@ -1,17 +1,862 @@
 {
     "A1": {
-        "poder": {
-            "palavra": "poder",
+        "la": {
+            "palavra": "la",
             "frases": [
                 {
-                    "texto": "El poder es grande",
-                    "traduccion": "O poder é grande."
+                    "texto": "La mesa de la cocina es grande.",
+                    "tradução": "A mesa da cozinha é grande."
+                },
+                {
+                    "texto": "Vamos encontrar un parque y jugar al fútbol.",
+                    "tradução": "Vamos encontrar um parque e jogar futebol."
+                },
+                {
+                    "texto": "La niñita tiene una pelota azul.",
+                    "tradução": "A criança tem uma bola azul."
+                }
+            ]
+        },
+        "que": {
+            "palavra": "que",
+            "frases": [
+                {
+                    "texto": "Estoy buscando un libro que sea interesante.",
+                    "traduccion": "Estou procurando um livro interessante."
+                },
+                {
+                    "texto": "Hay una película en la televisión y es muy divertida",
+                    "traduction": "Existe uma filme na TV que é muito engraçada"
+                },
+                {
+                    "texto": "Vamos a la playa donde sea soleado.",
+                    "translation": "Vamos à praia onde faz um dia claro."
+                }
+            ]
+        },
+        "de": {
+            "palavra": "de",
+            "frases": [
+                {
+                    "texto": "La casa de Ana está en la ciudad.",
+                    "tradução": "A casa da Ana está na cidade."
+                },
+                {
+                    "texto": "Estoy pensando sobre los libros que he leído este año.",
+                    "tradução": "Estou pensando nos livros que lieste neste ano."
+                },
+                {
+                    "texto": "Me gusta el chocolate de mi abuela.",
+                    "tradução": "Gosto do chocolate da minha avó."
+                }
+            ]
+        },
+        "en": {
+            "palavra": "en",
+            "frases": [
+                {
+                    "texto": "Estoy en casa.",
+                    "tradução": "Estou em casa."
+                },
+                {
+                    "texto": "Voy a la escuela en el bus.",
+                    "tradução": "Irei para a escola no ônibus."
+                },
+                {
+                    "texto": "Ellos están en México.",
+                    "tradução": "Eles estão em México."
+                }
+            ]
+        },
+        "y": {
+            "palavra": "y",
+            "frases": [
+                {
+                    "texto": "Me gusta jugar al fútbol y pasarlo con mis amigos.",
+                    "traduccion": "Eu gosto de jogar futebol e passá-lo com meus amigos."
+                },
+                {
+                    "texto": "Y después del trabajo, voy a casa para descansar.",
+                    "tradução": "Depois do trabalho, eu vou para casa para descansar."
+                },
+                {
+                    "texto": "No cine, vejo películas y conozco gente nueva.",
+                    "traduzão": "Nos cinemas, vejo filmes e conheço pessoas novas."
+                }
+            ]
+        },
+        "a": {
+            "palavra": "a",
+            "frases": [
+                {
+                    "texto": "Ella tiene una naranja.",
+                    "tradução": "Ela tem uma laranja."
+                },
+                {
+                    "texto": "Tengo que ir a la tienda para comprar unas hojas de papel.",
+                    "tradução": "Tenho que ir à loja para comprar umas folhas de papel."
+                },
+                {
+                    "texto": "El niño se perdió una pelota en el parque.",
+                    "tradução": "O menino perdeu uma bola no parque."
+                }
+            ]
+        },
+        "ser": {
+            "palavra": "ser",
+            "frases": [
+                {
+                    "texto": "Yo soy una persona.",
+                    "traduccion": "Eu sou uma pessoa."
+                },
+                {
+                    "texto": "La casa es grande y bonita.",
+                    "traduccion": "A casa é grande e bonita."
+                },
+                {
+                    "texto": "El perro son mi mascota.",
+                    "traduccion": "O cão é meu animal de estimação."
+                }
+            ]
+        },
+        "no": {
+            "palavra": "no",
+            "frases": [
+                {
+                    "texto": "Yo no tengo hermanos.",
+                    "traduction": "Eu não tenho irmãos."
+                },
+                {
+                    "texto": "No sábado, nos quedamos en casa.",
+                    "traduction": "No sábado, ficamos em casa."
+                },
+                {
+                    "texto": "Ella no está contenta con su examen.",
+                    "traduction": "Ela não está contente com seu exame."
+                }
+            ]
+        },
+        "se": {
+            "palavra": "se",
+            "frases": [
+                {
+                    "texto": "Si hace calor, me gusta tomar un refresco.",
+                    "traduccion": "Se faz calor, eu gosto de tomar um refrigerante."
+                },
+                {
+                    "texto": "Si llueve mañana no trabajo puedo ir a casa temprano.",
+                    "tradução": "Quando chove amanhã ao trabalho, posso me despedir cedo para casa."
+                },
+                {
+                    "texto": "Si estudio mucho, pasaré el examen con buenos resultados.",
+                    "tradução": "Se eu estudar muito, passarei no exame com boquesonhosores."
+                }
+            ]
+        },
+        "un": {
+            "palavra": "un",
+            "frases": [
+                {
+                    "texto": "Tengo un libro que leo.",
+                    "tradução": "Eu tenho um livro que estou lendo."
+                },
+                {
+                    "texto": "¿Puedes darme una mano para levantar este peso?",
+                    "tradução": "Você pode me ajudar a levantar esse peso?"
+                },
+                {
+                    "texto": "Esta esquina tiene un banco muy confortable.",
+                    "tradução": "Essa curva tem um banco muito confortável."
                 }
             ]
         }
     },
-    "A2": {},
-    "B1": {},
-    "B2": {},
-    "C1": {}
+    "A2": {
+        "la": {
+            "palavra": "la",
+            "frases": [
+                {
+                    "texto": "La mesa de la cocina es grande.",
+                    "tradução": "A mesa da cozinha é grande."
+                },
+                {
+                    "texto": "Vamos encontrar un parque y jugar al fútbol.",
+                    "tradução": "Vamos encontrar um parque e jogar futebol."
+                },
+                {
+                    "texto": "La niñita tiene una pelota azul.",
+                    "tradução": "A criança tem uma bola azul."
+                }
+            ]
+        },
+        "que": {
+            "palavra": "que",
+            "frases": [
+                {
+                    "texto": "Estoy buscando un libro que sea interesante.",
+                    "traduccion": "Estou procurando um livro interessante."
+                },
+                {
+                    "texto": "Hay una película en la televisión y es muy divertida",
+                    "traduction": "Existe uma filme na TV que é muito engraçada"
+                },
+                {
+                    "texto": "Vamos a la playa donde sea soleado.",
+                    "translation": "Vamos à praia onde faz um dia claro."
+                }
+            ]
+        },
+        "de": {
+            "palavra": "de",
+            "frases": [
+                {
+                    "texto": "La casa de Ana está en la ciudad.",
+                    "tradução": "A casa da Ana está na cidade."
+                },
+                {
+                    "texto": "Estoy pensando sobre los libros que he leído este año.",
+                    "tradução": "Estou pensando nos livros que lieste neste ano."
+                },
+                {
+                    "texto": "Me gusta el chocolate de mi abuela.",
+                    "tradução": "Gosto do chocolate da minha avó."
+                }
+            ]
+        },
+        "en": {
+            "palavra": "en",
+            "frases": [
+                {
+                    "texto": "Estoy en casa.",
+                    "tradução": "Estou em casa."
+                },
+                {
+                    "texto": "Voy a la escuela en el bus.",
+                    "tradução": "Irei para a escola no ônibus."
+                },
+                {
+                    "texto": "Ellos están en México.",
+                    "tradução": "Eles estão em México."
+                }
+            ]
+        },
+        "y": {
+            "palavra": "y",
+            "frases": [
+                {
+                    "texto": "Me gusta jugar al fútbol y pasarlo con mis amigos.",
+                    "traduccion": "Eu gosto de jogar futebol e passá-lo com meus amigos."
+                },
+                {
+                    "texto": "Y después del trabajo, voy a casa para descansar.",
+                    "tradução": "Depois do trabalho, eu vou para casa para descansar."
+                },
+                {
+                    "texto": "No cine, vejo películas y conozco gente nueva.",
+                    "traduzão": "Nos cinemas, vejo filmes e conheço pessoas novas."
+                }
+            ]
+        },
+        "a": {
+            "palavra": "a",
+            "frases": [
+                {
+                    "texto": "Ella tiene una naranja.",
+                    "tradução": "Ela tem uma laranja."
+                },
+                {
+                    "texto": "Tengo que ir a la tienda para comprar unas hojas de papel.",
+                    "tradução": "Tenho que ir à loja para comprar umas folhas de papel."
+                },
+                {
+                    "texto": "El niño se perdió una pelota en el parque.",
+                    "tradução": "O menino perdeu uma bola no parque."
+                }
+            ]
+        },
+        "ser": {
+            "palavra": "ser",
+            "frases": [
+                {
+                    "texto": "Yo soy una persona.",
+                    "traduccion": "Eu sou uma pessoa."
+                },
+                {
+                    "texto": "La casa es grande y bonita.",
+                    "traduccion": "A casa é grande e bonita."
+                },
+                {
+                    "texto": "El perro son mi mascota.",
+                    "traduccion": "O cão é meu animal de estimação."
+                }
+            ]
+        },
+        "no": {
+            "palavra": "no",
+            "frases": [
+                {
+                    "texto": "Yo no tengo hermanos.",
+                    "traduction": "Eu não tenho irmãos."
+                },
+                {
+                    "texto": "No sábado, nos quedamos en casa.",
+                    "traduction": "No sábado, ficamos em casa."
+                },
+                {
+                    "texto": "Ella no está contenta con su examen.",
+                    "traduction": "Ela não está contente com seu exame."
+                }
+            ]
+        },
+        "se": {
+            "palavra": "se",
+            "frases": [
+                {
+                    "texto": "Si hace calor, me gusta tomar un refresco.",
+                    "traduccion": "Se faz calor, eu gosto de tomar um refrigerante."
+                },
+                {
+                    "texto": "Si llueve mañana no trabajo puedo ir a casa temprano.",
+                    "tradução": "Quando chove amanhã ao trabalho, posso me despedir cedo para casa."
+                },
+                {
+                    "texto": "Si estudio mucho, pasaré el examen con buenos resultados.",
+                    "tradução": "Se eu estudar muito, passarei no exame com boquesonhosores."
+                }
+            ]
+        },
+        "un": {
+            "palavra": "un",
+            "frases": [
+                {
+                    "texto": "Tengo un libro que leo.",
+                    "tradução": "Eu tenho um livro que estou lendo."
+                },
+                {
+                    "texto": "¿Puedes darme una mano para levantar este peso?",
+                    "tradução": "Você pode me ajudar a levantar esse peso?"
+                },
+                {
+                    "texto": "Esta esquina tiene un banco muy confortable.",
+                    "tradução": "Essa curva tem um banco muito confortável."
+                }
+            ]
+        }
+    },
+    "B1": {
+        "la": {
+            "palavra": "la",
+            "frases": [
+                {
+                    "texto": "La mesa de la cocina es grande.",
+                    "tradução": "A mesa da cozinha é grande."
+                },
+                {
+                    "texto": "Vamos encontrar un parque y jugar al fútbol.",
+                    "tradução": "Vamos encontrar um parque e jogar futebol."
+                },
+                {
+                    "texto": "La niñita tiene una pelota azul.",
+                    "tradução": "A criança tem uma bola azul."
+                }
+            ]
+        },
+        "que": {
+            "palavra": "que",
+            "frases": [
+                {
+                    "texto": "Estoy buscando un libro que sea interesante.",
+                    "traduccion": "Estou procurando um livro interessante."
+                },
+                {
+                    "texto": "Hay una película en la televisión y es muy divertida",
+                    "traduction": "Existe uma filme na TV que é muito engraçada"
+                },
+                {
+                    "texto": "Vamos a la playa donde sea soleado.",
+                    "translation": "Vamos à praia onde faz um dia claro."
+                }
+            ]
+        },
+        "de": {
+            "palavra": "de",
+            "frases": [
+                {
+                    "texto": "La casa de Ana está en la ciudad.",
+                    "tradução": "A casa da Ana está na cidade."
+                },
+                {
+                    "texto": "Estoy pensando sobre los libros que he leído este año.",
+                    "tradução": "Estou pensando nos livros que lieste neste ano."
+                },
+                {
+                    "texto": "Me gusta el chocolate de mi abuela.",
+                    "tradução": "Gosto do chocolate da minha avó."
+                }
+            ]
+        },
+        "en": {
+            "palavra": "en",
+            "frases": [
+                {
+                    "texto": "Estoy en casa.",
+                    "tradução": "Estou em casa."
+                },
+                {
+                    "texto": "Voy a la escuela en el bus.",
+                    "tradução": "Irei para a escola no ônibus."
+                },
+                {
+                    "texto": "Ellos están en México.",
+                    "tradução": "Eles estão em México."
+                }
+            ]
+        },
+        "y": {
+            "palavra": "y",
+            "frases": [
+                {
+                    "texto": "Me gusta jugar al fútbol y pasarlo con mis amigos.",
+                    "traduccion": "Eu gosto de jogar futebol e passá-lo com meus amigos."
+                },
+                {
+                    "texto": "Y después del trabajo, voy a casa para descansar.",
+                    "tradução": "Depois do trabalho, eu vou para casa para descansar."
+                },
+                {
+                    "texto": "No cine, vejo películas y conozco gente nueva.",
+                    "traduzão": "Nos cinemas, vejo filmes e conheço pessoas novas."
+                }
+            ]
+        },
+        "a": {
+            "palavra": "a",
+            "frases": [
+                {
+                    "texto": "Ella tiene una naranja.",
+                    "tradução": "Ela tem uma laranja."
+                },
+                {
+                    "texto": "Tengo que ir a la tienda para comprar unas hojas de papel.",
+                    "tradução": "Tenho que ir à loja para comprar umas folhas de papel."
+                },
+                {
+                    "texto": "El niño se perdió una pelota en el parque.",
+                    "tradução": "O menino perdeu uma bola no parque."
+                }
+            ]
+        },
+        "ser": {
+            "palavra": "ser",
+            "frases": [
+                {
+                    "texto": "Yo soy una persona.",
+                    "traduccion": "Eu sou uma pessoa."
+                },
+                {
+                    "texto": "La casa es grande y bonita.",
+                    "traduccion": "A casa é grande e bonita."
+                },
+                {
+                    "texto": "El perro son mi mascota.",
+                    "traduccion": "O cão é meu animal de estimação."
+                }
+            ]
+        },
+        "no": {
+            "palavra": "no",
+            "frases": [
+                {
+                    "texto": "Yo no tengo hermanos.",
+                    "traduction": "Eu não tenho irmãos."
+                },
+                {
+                    "texto": "No sábado, nos quedamos en casa.",
+                    "traduction": "No sábado, ficamos em casa."
+                },
+                {
+                    "texto": "Ella no está contenta con su examen.",
+                    "traduction": "Ela não está contente com seu exame."
+                }
+            ]
+        },
+        "se": {
+            "palavra": "se",
+            "frases": [
+                {
+                    "texto": "Si hace calor, me gusta tomar un refresco.",
+                    "traduccion": "Se faz calor, eu gosto de tomar um refrigerante."
+                },
+                {
+                    "texto": "Si llueve mañana no trabajo puedo ir a casa temprano.",
+                    "tradução": "Quando chove amanhã ao trabalho, posso me despedir cedo para casa."
+                },
+                {
+                    "texto": "Si estudio mucho, pasaré el examen con buenos resultados.",
+                    "tradução": "Se eu estudar muito, passarei no exame com boquesonhosores."
+                }
+            ]
+        },
+        "un": {
+            "palavra": "un",
+            "frases": [
+                {
+                    "texto": "Tengo un libro que leo.",
+                    "tradução": "Eu tenho um livro que estou lendo."
+                },
+                {
+                    "texto": "¿Puedes darme una mano para levantar este peso?",
+                    "tradução": "Você pode me ajudar a levantar esse peso?"
+                },
+                {
+                    "texto": "Esta esquina tiene un banco muy confortable.",
+                    "tradução": "Essa curva tem um banco muito confortável."
+                }
+            ]
+        }
+    },
+    "B2": {
+        "la": {
+            "palavra": "la",
+            "frases": [
+                {
+                    "texto": "La mesa de la cocina es grande.",
+                    "tradução": "A mesa da cozinha é grande."
+                },
+                {
+                    "texto": "Vamos encontrar un parque y jugar al fútbol.",
+                    "tradução": "Vamos encontrar um parque e jogar futebol."
+                },
+                {
+                    "texto": "La niñita tiene una pelota azul.",
+                    "tradução": "A criança tem uma bola azul."
+                }
+            ]
+        },
+        "que": {
+            "palavra": "que",
+            "frases": [
+                {
+                    "texto": "Estoy buscando un libro que sea interesante.",
+                    "traduccion": "Estou procurando um livro interessante."
+                },
+                {
+                    "texto": "Hay una película en la televisión y es muy divertida",
+                    "traduction": "Existe uma filme na TV que é muito engraçada"
+                },
+                {
+                    "texto": "Vamos a la playa donde sea soleado.",
+                    "translation": "Vamos à praia onde faz um dia claro."
+                }
+            ]
+        },
+        "de": {
+            "palavra": "de",
+            "frases": [
+                {
+                    "texto": "La casa de Ana está en la ciudad.",
+                    "tradução": "A casa da Ana está na cidade."
+                },
+                {
+                    "texto": "Estoy pensando sobre los libros que he leído este año.",
+                    "tradução": "Estou pensando nos livros que lieste neste ano."
+                },
+                {
+                    "texto": "Me gusta el chocolate de mi abuela.",
+                    "tradução": "Gosto do chocolate da minha avó."
+                }
+            ]
+        },
+        "en": {
+            "palavra": "en",
+            "frases": [
+                {
+                    "texto": "Estoy en casa.",
+                    "tradução": "Estou em casa."
+                },
+                {
+                    "texto": "Voy a la escuela en el bus.",
+                    "tradução": "Irei para a escola no ônibus."
+                },
+                {
+                    "texto": "Ellos están en México.",
+                    "tradução": "Eles estão em México."
+                }
+            ]
+        },
+        "y": {
+            "palavra": "y",
+            "frases": [
+                {
+                    "texto": "Me gusta jugar al fútbol y pasarlo con mis amigos.",
+                    "traduccion": "Eu gosto de jogar futebol e passá-lo com meus amigos."
+                },
+                {
+                    "texto": "Y después del trabajo, voy a casa para descansar.",
+                    "tradução": "Depois do trabalho, eu vou para casa para descansar."
+                },
+                {
+                    "texto": "No cine, vejo películas y conozco gente nueva.",
+                    "traduzão": "Nos cinemas, vejo filmes e conheço pessoas novas."
+                }
+            ]
+        },
+        "a": {
+            "palavra": "a",
+            "frases": [
+                {
+                    "texto": "Ella tiene una naranja.",
+                    "tradução": "Ela tem uma laranja."
+                },
+                {
+                    "texto": "Tengo que ir a la tienda para comprar unas hojas de papel.",
+                    "tradução": "Tenho que ir à loja para comprar umas folhas de papel."
+                },
+                {
+                    "texto": "El niño se perdió una pelota en el parque.",
+                    "tradução": "O menino perdeu uma bola no parque."
+                }
+            ]
+        },
+        "ser": {
+            "palavra": "ser",
+            "frases": [
+                {
+                    "texto": "Yo soy una persona.",
+                    "traduccion": "Eu sou uma pessoa."
+                },
+                {
+                    "texto": "La casa es grande y bonita.",
+                    "traduccion": "A casa é grande e bonita."
+                },
+                {
+                    "texto": "El perro son mi mascota.",
+                    "traduccion": "O cão é meu animal de estimação."
+                }
+            ]
+        },
+        "no": {
+            "palavra": "no",
+            "frases": [
+                {
+                    "texto": "Yo no tengo hermanos.",
+                    "traduction": "Eu não tenho irmãos."
+                },
+                {
+                    "texto": "No sábado, nos quedamos en casa.",
+                    "traduction": "No sábado, ficamos em casa."
+                },
+                {
+                    "texto": "Ella no está contenta con su examen.",
+                    "traduction": "Ela não está contente com seu exame."
+                }
+            ]
+        },
+        "se": {
+            "palavra": "se",
+            "frases": [
+                {
+                    "texto": "Si hace calor, me gusta tomar un refresco.",
+                    "traduccion": "Se faz calor, eu gosto de tomar um refrigerante."
+                },
+                {
+                    "texto": "Si llueve mañana no trabajo puedo ir a casa temprano.",
+                    "tradução": "Quando chove amanhã ao trabalho, posso me despedir cedo para casa."
+                },
+                {
+                    "texto": "Si estudio mucho, pasaré el examen con buenos resultados.",
+                    "tradução": "Se eu estudar muito, passarei no exame com boquesonhosores."
+                }
+            ]
+        },
+        "un": {
+            "palavra": "un",
+            "frases": [
+                {
+                    "texto": "Tengo un libro que leo.",
+                    "tradução": "Eu tenho um livro que estou lendo."
+                },
+                {
+                    "texto": "¿Puedes darme una mano para levantar este peso?",
+                    "tradução": "Você pode me ajudar a levantar esse peso?"
+                },
+                {
+                    "texto": "Esta esquina tiene un banco muy confortable.",
+                    "tradução": "Essa curva tem um banco muito confortável."
+                }
+            ]
+        }
+    },
+    "C1": {
+        "la": {
+            "palavra": "la",
+            "frases": [
+                {
+                    "texto": "La mesa de la cocina es grande.",
+                    "tradução": "A mesa da cozinha é grande."
+                },
+                {
+                    "texto": "Vamos encontrar un parque y jugar al fútbol.",
+                    "tradução": "Vamos encontrar um parque e jogar futebol."
+                },
+                {
+                    "texto": "La niñita tiene una pelota azul.",
+                    "tradução": "A criança tem uma bola azul."
+                }
+            ]
+        },
+        "que": {
+            "palavra": "que",
+            "frases": [
+                {
+                    "texto": "Estoy buscando un libro que sea interesante.",
+                    "traduccion": "Estou procurando um livro interessante."
+                },
+                {
+                    "texto": "Hay una película en la televisión y es muy divertida",
+                    "traduction": "Existe uma filme na TV que é muito engraçada"
+                },
+                {
+                    "texto": "Vamos a la playa donde sea soleado.",
+                    "translation": "Vamos à praia onde faz um dia claro."
+                }
+            ]
+        },
+        "de": {
+            "palavra": "de",
+            "frases": [
+                {
+                    "texto": "La casa de Ana está en la ciudad.",
+                    "tradução": "A casa da Ana está na cidade."
+                },
+                {
+                    "texto": "Estoy pensando sobre los libros que he leído este año.",
+                    "tradução": "Estou pensando nos livros que lieste neste ano."
+                },
+                {
+                    "texto": "Me gusta el chocolate de mi abuela.",
+                    "tradução": "Gosto do chocolate da minha avó."
+                }
+            ]
+        },
+        "en": {
+            "palavra": "en",
+            "frases": [
+                {
+                    "texto": "Estoy en casa.",
+                    "tradução": "Estou em casa."
+                },
+                {
+                    "texto": "Voy a la escuela en el bus.",
+                    "tradução": "Irei para a escola no ônibus."
+                },
+                {
+                    "texto": "Ellos están en México.",
+                    "tradução": "Eles estão em México."
+                }
+            ]
+        },
+        "y": {
+            "palavra": "y",
+            "frases": [
+                {
+                    "texto": "Me gusta jugar al fútbol y pasarlo con mis amigos.",
+                    "traduccion": "Eu gosto de jogar futebol e passá-lo com meus amigos."
+                },
+                {
+                    "texto": "Y después del trabajo, voy a casa para descansar.",
+                    "tradução": "Depois do trabalho, eu vou para casa para descansar."
+                },
+                {
+                    "texto": "No cine, vejo películas y conozco gente nueva.",
+                    "traduzão": "Nos cinemas, vejo filmes e conheço pessoas novas."
+                }
+            ]
+        },
+        "a": {
+            "palavra": "a",
+            "frases": [
+                {
+                    "texto": "Ella tiene una naranja.",
+                    "tradução": "Ela tem uma laranja."
+                },
+                {
+                    "texto": "Tengo que ir a la tienda para comprar unas hojas de papel.",
+                    "tradução": "Tenho que ir à loja para comprar umas folhas de papel."
+                },
+                {
+                    "texto": "El niño se perdió una pelota en el parque.",
+                    "tradução": "O menino perdeu uma bola no parque."
+                }
+            ]
+        },
+        "ser": {
+            "palavra": "ser",
+            "frases": [
+                {
+                    "texto": "Yo soy una persona.",
+                    "traduccion": "Eu sou uma pessoa."
+                },
+                {
+                    "texto": "La casa es grande y bonita.",
+                    "traduccion": "A casa é grande e bonita."
+                },
+                {
+                    "texto": "El perro son mi mascota.",
+                    "traduccion": "O cão é meu animal de estimação."
+                }
+            ]
+        },
+        "no": {
+            "palavra": "no",
+            "frases": [
+                {
+                    "texto": "Yo no tengo hermanos.",
+                    "traduction": "Eu não tenho irmãos."
+                },
+                {
+                    "texto": "No sábado, nos quedamos en casa.",
+                    "traduction": "No sábado, ficamos em casa."
+                },
+                {
+                    "texto": "Ella no está contenta con su examen.",
+                    "traduction": "Ela não está contente com seu exame."
+                }
+            ]
+        },
+        "se": {
+            "palavra": "se",
+            "frases": [
+                {
+                    "texto": "Si hace calor, me gusta tomar un refresco.",
+                    "traduccion": "Se faz calor, eu gosto de tomar um refrigerante."
+                },
+                {
+                    "texto": "Si llueve mañana no trabajo puedo ir a casa temprano.",
+                    "tradução": "Quando chove amanhã ao trabalho, posso me despedir cedo para casa."
+                },
+                {
+                    "texto": "Si estudio mucho, pasaré el examen con buenos resultados.",
+                    "tradução": "Se eu estudar muito, passarei no exame com boquesonhosores."
+                }
+            ]
+        },
+        "un": {
+            "palavra": "un",
+            "frases": [
+                {
+                    "texto": "Tengo un libro que leo.",
+                    "tradução": "Eu tenho um livro que estou lendo."
+                },
+                {
+                    "texto": "¿Puedes darme una mano para levantar este peso?",
+                    "tradução": "Você pode me ajudar a levantar esse peso?"
+                },
+                {
+                    "texto": "Esta esquina tiene un banco muy confortable.",
+                    "tradução": "Essa curva tem um banco muito confortável."
+                }
+            ]
+        }
+    }
 }

@@ -1,7 +1,7 @@
 import fs from "fs/promises"
-import Logger from "./Logger.js";
-import WordLoader from "./WordLoader.js";
-import { isMock } from "../config/cmd_args.js";
+import Logger from "../../shared/Logger.js";
+import WordLoader from "../../shared/services/WordLoader.js";
+import { isMock } from "../../shared/config/cmd-args.config.js";
 
 const model = "phi3:mini";
 var url = "http://ollama:11434";
@@ -353,6 +353,7 @@ function getPhrasesForExercises(level, amount, wordsToReview = []) {
     typeof phrase.texto === 'string' && phrase.texto.trim() &&
     typeof phrase.traduccion === 'string' && phrase.traduccion.trim()
   );
+
   const phrasesByWord = new Map();
   for (const phrase of filtered) {
     if (!phrasesByWord.has(phrase.palavra)) {
@@ -360,6 +361,8 @@ function getPhrasesForExercises(level, amount, wordsToReview = []) {
     }
     phrasesByWord.get(phrase.palavra).push(phrase);
   }
+
+  console.log("phrasesByWord", phrasesByWord);
 
   const shuffle = (phrases) => [...phrases].sort(() => Math.random() - 0.5);
   const shuffled = shuffle(filtered);
@@ -422,7 +425,7 @@ function getAllPhrasesForLevel(level) {
   return phrases;
 }
 
-function QuestionsCacheLoader() {
+function QuestionsRepository() {
   return {
     model,
     setUrl: (newUrl)=> url = newUrl,
@@ -435,4 +438,4 @@ function QuestionsCacheLoader() {
   }
 }
 
-export default QuestionsCacheLoader();
+export default QuestionsRepository();

@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const pool = mysql.createPool({
+const databasePool = mysql.createPool({
   host: process.env.DB_HOST || 'mysql',
   port: Number(process.env.DB_PORT || 3306),
   user: process.env.DB_USER,
@@ -15,4 +15,4 @@ const pool = mysql.createPool({
   charset: 'utf8mb4'
 });
 
-export default pool;
+export default databasePool;

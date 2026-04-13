@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
 import app from "./app.js";
-import Logger from "./core/Logger.js";
-import OllamaChecker from "./core/OllamaChecker.js";
-import QuestionsCacheLoader from "./core/QuestionsCacheLoader.js";
+import Logger from "./shared/Logger.js";
+import OllamaChecker from "./shared/services/OllamaChecker.js";
+import questionsRepository from './modules/exercises/questions.repository.js';
 
 dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
 
@@ -12,13 +12,13 @@ const ollamanAdress = 'http://host.docker.internal:11434'
 async function pollingQuestions() {
     try {
         OllamaChecker.setUrl(ollamanAdress);
-        QuestionsCacheLoader.setUrl(ollamanAdress);
+        questionsRepository.setUrl(ollamanAdress);
 
         Logger.info("Lendo dados previamente salvos");
-        await QuestionsCacheLoader.loadDataFromDisc()
+        await questionsRepository.loadDataFromDisc()
 
-        if(await OllamaChecker.checkModels(QuestionsCacheLoader.model)) {
-            QuestionsCacheLoader.pollingQuestions();
+        if(await OllamaChecker.checkModels(questionsRepository.model)) {
+            questionsRepository.pollingQuestions();
         } else {
             Logger.error("Modelo de IA indisponivel no OLLAMA");
             setTimeout(()=> {

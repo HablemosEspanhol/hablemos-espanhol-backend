@@ -106,7 +106,7 @@ function createMultipleChoiceExercise(phrase, wrongOptions) {
   });
 }
 
-function ExerciseService() {
+function ExerciseRepository() {
   return {
     generateExercises,
     createStableExerciseId,
@@ -116,4 +116,4 @@ function ExerciseService() {
   };
 }
 
-export default ExerciseService();
+export default ExerciseRepository();
