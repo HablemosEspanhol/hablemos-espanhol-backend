@@ -1,10 +1,10 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
-import swaggerUi from 'swagger-ui-express';
-import Logger from './core/Logger.js';
-import QuestionsCacheLoader from './core/QuestionsCacheLoader.js';
-import exercisesRoutes from './routes/exercises.routes.js';
-import swaggerDocument from './docs/swagger.js';
+import Logger from './shared/Logger.js';
+import exercisesRoutes from './modules/exercises/exercises.controller.js';
+import swaggerController from './modules/swagger/swagger.controller.js';
+import phrasesController from './modules/phrases/phrases.controller.js';
+import chatController from './modules/chat/chat.controller.js'
 
 const app = express();
 app.use(express.json());
@@ -12,17 +12,10 @@ app.use(cookieParser());
 
 
 app.get('/', (req, res) => res.send("OK"));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.get('/api-docs.json', (req, res) => res.json(swaggerDocument));
-
-app.get('/api/random', async (req, res) => {
-    res.send({
-        message: "Lista de Lições aleatorias de Espanhol",
-        data: QuestionsCacheLoader.getQuestions(10)
-    })
-});
-
-app.use('/api', exercisesRoutes);
+app.use('/api/exercises', exercisesRoutes);
+app.use('/api/phrases', phrasesController);
+app.use('/api/chat', chatController);
+app.use('/swagger', swaggerController);
 
 app.use((err, req, res, next) => {
     Logger.error(err);

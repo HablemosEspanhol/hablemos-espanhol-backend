@@ -1,5 +1,5 @@
 import fs from "fs/promises"
-import Logger from "./Logger.js";
+import Logger from "../Logger.js";
 import WordLoader from "./WordLoader.js";
 import { isMock } from "../config/cmd_args.js";
 
@@ -340,6 +340,8 @@ function getPhrasesForExercises(level, amount, wordsToReview = []) {
 
   appendLevel(level);
 
+  console.log("allPhrases", allPhrases);
+
   if (allPhrases.length < amount) {
     Object.keys(questionFromWordCache).forEach(otherLevel => {
       if (otherLevel !== level) {
@@ -353,6 +355,8 @@ function getPhrasesForExercises(level, amount, wordsToReview = []) {
     typeof phrase.texto === 'string' && phrase.texto.trim() &&
     typeof phrase.traduccion === 'string' && phrase.traduccion.trim()
   );
+
+  console.log("filtered", filtered);
   const phrasesByWord = new Map();
   for (const phrase of filtered) {
     if (!phrasesByWord.has(phrase.palavra)) {
@@ -360,6 +364,8 @@ function getPhrasesForExercises(level, amount, wordsToReview = []) {
     }
     phrasesByWord.get(phrase.palavra).push(phrase);
   }
+
+  console.log("phrasesByWord", phrasesByWord);
 
   const shuffle = (phrases) => [...phrases].sort(() => Math.random() - 0.5);
   const shuffled = shuffle(filtered);

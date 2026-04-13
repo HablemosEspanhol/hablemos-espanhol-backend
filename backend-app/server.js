@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
 import app from "./app.js";
-import Logger from "./core/Logger.js";
-import OllamaChecker from "./core/OllamaChecker.js";
-import QuestionsCacheLoader from "./core/QuestionsCacheLoader.js";
+import Logger from "./shared/Logger.js";
+import OllamaChecker from "./shared/services/OllamaChecker.js";
+import QuestionsCacheLoader from "./shared/services/QuestionsCacheLoader.js";
 
 dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
 

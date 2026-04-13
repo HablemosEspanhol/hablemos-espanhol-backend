@@ -1,0 +1,86 @@
+import express from 'express';
+import UserProgressService from '../../shared/data/UserProgressRepository.js';
+import Logger from '../../shared/Logger.js';
+import ExercisesService from './exercises.service.js';
+
+const router = express.Router();
+
+// GET /api/exercises?username={username}
+router.get('/', async (req, res) => {
+  try {
+    const { username } = req.query;
+    if (!username) {
+      return res.status(400).json({ error: 'Username is required' });
+    }
+    res.json(await ExercisesService.getExercisesByUsername(username));
+  } catch (error) {
+    Logger.error('Error generating exercises:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/exercises/submit
+router.post('/submit', async (req, res) => {
+  try {
+    console.log(req.body);
+    const { username, answers } = req.body;
+    const invalidAnswer = Array.isArray(answers)
+      ? answers.some(answer => !answer || !answer.exerciseId || (typeof answer.answer === 'undefined' && typeof answer.userAnswer === 'undefined' && typeof answer.correct === 'undefined'))
+      : true;
+
+    if (!username || !answers || !Array.isArray(answers) || invalidAnswer) {
+      return res.status(400).json({ error: 'Invalid request body' });
+    }
+
+    const result = await UserProgressService.updateProgress(username, answers);
+
+    let message = '';
+    if (result.accuracy >= 80) {
+      message = `Excelente! ${result.accuracy}% correto. Parabéns, você subiu para ${result.newLevel}!`;
+    } else if (result.accuracy >= 60) {
+      message = `Bom! ${result.accuracy}% correto. Continue praticando no nível ${result.newLevel}.`;
+    } else if (result.accuracy >= 50) {
+      message = `Você acertou ${result.accuracy}%. Continue tentando no nível ${result.newLevel}.`;
+    } else {
+      message = `${result.accuracy}% correto. Você desceu para ${result.newLevel}. Tente novamente!`;
+    }
+
+    res.json({
+      accuracy: result.accuracy,
+      newLevel: result.newLevel,
+      message
+    });
+  } catch (error) {
+    Logger.error('Error submitting exercises:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /api/exercises/check
+router.post('/check', async (req, res) => {
+  try {
+    const { username, answer } = req.body;
+
+    const hasUserAnswer = answer && (
+      typeof answer.answer !== 'undefined' ||
+      typeof answer.userAnswer !== 'undefined'
+    );
+
+    if (!username || !answer?.exerciseId || !hasUserAnswer) {
+      return res.status(400).json({ error: 'Invalid request body' });
+    }
+
+    const result = await UserProgressService.checkExerciseAnswer(username, answer);
+
+    if (!result) {
+      return res.status(404).json({ error: 'Exercise not found for user' });
+    }
+
+    res.json(result);
+  } catch (error) {
+    Logger.error('Error checking exercise:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+export default router;

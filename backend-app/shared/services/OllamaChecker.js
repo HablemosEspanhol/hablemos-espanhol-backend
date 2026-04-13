@@ -1,5 +1,5 @@
 import { isMock } from "../config/cmd_args.js";
-import Logger from "./Logger.js";
+import Logger from "../Logger.js";
 
 var url = "http://ollama:11434";
 
