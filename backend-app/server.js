@@ -20,7 +20,7 @@ async function pollingQuestions() {
         if(await OllamaChecker.checkModels(questionsRepository.model)) {
             questionsRepository.pollingQuestions();
         } else {
-            Logger.error("Modelo de IA indisponivel no OLLAMA");
+            Logger.warning("Modelo de IA indisponivel no OLLAMA");
             setTimeout(()=> {
                 Logger.info("RETRY pollingQuestions()")
                 pollingQuestions();

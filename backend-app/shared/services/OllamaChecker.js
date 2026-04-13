@@ -22,7 +22,7 @@ function OllamaChecker() {
                 Logger.info("OllamaChecker", data);
                 return JSON.stringify(data).includes(model);
             } catch (error) {
-                Logger.error("OllamaChecker", error);
+                Logger.warning("OllamaChecker", error);
             }
 
         }
