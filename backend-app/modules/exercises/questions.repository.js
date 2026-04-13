@@ -340,8 +340,6 @@ function getPhrasesForExercises(level, amount, wordsToReview = []) {
 
   appendLevel(level);
 
-  console.log("allPhrases", allPhrases);
-
   if (allPhrases.length < amount) {
     Object.keys(questionFromWordCache).forEach(otherLevel => {
       if (otherLevel !== level) {
@@ -356,7 +354,6 @@ function getPhrasesForExercises(level, amount, wordsToReview = []) {
     typeof phrase.traduccion === 'string' && phrase.traduccion.trim()
   );
 
-  console.log("filtered", filtered);
   const phrasesByWord = new Map();
   for (const phrase of filtered) {
     if (!phrasesByWord.has(phrase.palavra)) {

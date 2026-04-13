@@ -29,10 +29,10 @@ const ExercisesService = {
             throw { status: 400, error: 'Invalid request body' }
         }
 
-        const result = await UserProgressService.checkExerciseAnswer(username, answer);
+        const result = await UserProgressRepository.checkExerciseAnswer(username, answer);
 
         if (!result) {
-            throw { status: 400, error: 'Exercise not found for user' }
+            throw { status: 404, error: 'Exercise not found for user' }
         }
 
         return result;

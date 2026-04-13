@@ -1,5 +1,4 @@
 import express from 'express';
-import UserProgressService from '../../shared/data/UserProgressRepository.js';
 import Logger from '../../shared/Logger.js';
 import ExercisesService from './exercises.service.js';
 
@@ -39,7 +38,7 @@ router.post('/check', async (req, res) => {
   try {
     const { username, answer } = req.body;
     
-    const result = ExercisesService.checkOneExercise(username, answer);
+    const result = await ExercisesService.checkOneExercise(username, answer);
 
     res.json(result);
   } catch (error) {
