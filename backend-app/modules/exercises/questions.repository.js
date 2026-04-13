@@ -1,7 +1,7 @@
 import fs from "fs/promises"
-import Logger from "../Logger.js";
-import WordLoader from "./WordLoader.js";
-import { isMock } from "../config/cmd_args.js";
+import Logger from "../../shared/Logger.js";
+import WordLoader from "../../shared/services/WordLoader.js";
+import { isMock } from "../../shared/config/cmd_args.js";
 
 const model = "phi3:mini";
 var url = "http://ollama:11434";
@@ -428,7 +428,7 @@ function getAllPhrasesForLevel(level) {
   return phrases;
 }
 
-function QuestionsCacheLoader() {
+function QuestionsRepository() {
   return {
     model,
     setUrl: (newUrl)=> url = newUrl,
@@ -441,4 +441,4 @@ function QuestionsCacheLoader() {
   }
 }
 
-export default QuestionsCacheLoader();
+export default QuestionsRepository();

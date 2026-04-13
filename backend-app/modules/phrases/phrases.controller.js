@@ -1,6 +1,6 @@
 import express from 'express';
-import QuestionsCacheLoader from '../../shared/services/QuestionsCacheLoader.js';
 import Logger from '../../shared/Logger.js';
+import questionsRepository from '../exercises/questions.repository.js';
 
 const router = express.Router();
 
@@ -20,7 +20,7 @@ router.get('/', (req, res) => {
       return res.status(400).json({ error: 'Invalid page or limit parameters' });
     }
 
-    const phrases = QuestionsCacheLoader.getAllPhrasesForLevel(level);
+    const phrases = questionsRepository.getAllPhrasesForLevel(level);
     const total = phrases.length;
     const startIndex = (pageNum - 1) * limitNum;
     const endIndex = startIndex + limitNum;
