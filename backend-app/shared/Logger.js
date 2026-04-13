@@ -16,6 +16,9 @@ const Logger = {
     },
     error: (...message)=> {
         genericLog('error', ...message);
+    },
+    warning:  (...message)=> {
+        genericLog('warn', ...message);
     }
 }
 
