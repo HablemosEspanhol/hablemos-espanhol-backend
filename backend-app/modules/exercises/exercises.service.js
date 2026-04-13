@@ -1,4 +1,4 @@
-import UserProgressRepository from "../../shared/data/UserProgressRepository.js";
+import UserProgressRepository from "./user-progress.repository.js";
 import ExerciseRepository from "./exercise.repository.js";
 import QuestionsRepository from "./questions.repository.js";
 

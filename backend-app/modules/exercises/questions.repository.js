@@ -1,7 +1,7 @@
 import fs from "fs/promises"
 import Logger from "../../shared/Logger.js";
 import WordLoader from "../../shared/services/WordLoader.js";
-import { isMock } from "../../shared/config/cmd_args.js";
+import { isMock } from "../../shared/config/cmd-args.config.js";
 
 const model = "phi3:mini";
 var url = "http://ollama:11434";

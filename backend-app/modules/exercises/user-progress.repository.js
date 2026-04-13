@@ -1,6 +1,4 @@
-// import databasePool from '../../config/database.js';
-
-import databasePool from "../config/database.js";
+import databasePool from "../../shared/config/database.config.js";
 
 
 const DEFAULT_LEVEL = 'A1';
