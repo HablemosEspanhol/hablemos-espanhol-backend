@@ -18,7 +18,8 @@ async function pollingQuestions() {
         await questionsRepository.loadDataFromDisc()
 
         if(await OllamaChecker.checkModels(questionsRepository.model)) {
-            questionsRepository.pollingQuestions();
+            // questionsRepository.pollingQuestions();
+            Logger.info("PollingQuestions desabilitado");
         } else {
             Logger.warning("Modelo de IA indisponivel no OLLAMA");
             setTimeout(()=> {
