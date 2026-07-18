@@ -5,12 +5,14 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "start:mock": "node server.js --mock",
+    "dev": "tsx watch server.js",
+    "start": "node dist/server.js",
+    "start:mock": "node dist/server.js --mock",
+    "build": "tsc",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-    "test:api": "node tests/api-tests.js"
+    "test:api": "tsx tests/api-tests.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
