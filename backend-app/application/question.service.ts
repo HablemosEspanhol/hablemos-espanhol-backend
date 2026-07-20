@@ -3,8 +3,8 @@ import Logger from "../shared/Logger.js";
 import WordLoader from "../shared/services/WordLoader.js";
 import { isMock } from "../shared/config/cmd-args.config.js";
 import { QuestionV1, ParsedWordData, Frase, WordReviewItem, ExercisePhrase, LevelPhrase } from "../domain/models/questions.types.js";
-import { LLMProvider } from "../shared/llm/llm.types.js";
 import { IQuestionsRepository } from "../domain/repository/IQuestionsRepository.js";
+import { LLMProvider } from "../domain/services/LLMProvider.js";
 
 export class QuestionsService {
   constructor(

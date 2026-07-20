@@ -34,3 +34,12 @@ export interface LevelPhrase extends ExercisePhrase {
 export interface WordReviewItem {
   phrase: string;
 }
+
+export interface PaginatedPhrasesResponse {
+  level: string;
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  data: LevelPhrase[];
+}

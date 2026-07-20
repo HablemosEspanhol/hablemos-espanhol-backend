@@ -1,6 +1,22 @@
-const ChatService = () => {
-  const generateResponse = async (userMessage, context = {}) => {
-    const { username = 'anonymous', userLevel = 'A1', recentWords = [] } = context;
+import { ChatContext, ChatServiceResponse } from "../../domain/models/chat.types.js";
+import { LLMProvider } from "../../domain/services/LLMProvider.js";
+
+export class ChatService {
+  // O serviço consome o contrato do provedor injetado
+  constructor(private readonly llm: LLMProvider) {}
+
+  /**
+   * Coordena as regras do tutor de IA e solicita a resposta do modelo.
+   */
+  public async generateResponse(
+    userMessage: string, 
+    context: ChatContext = {}
+  ): Promise<ChatServiceResponse> {
+    const { 
+      username = "anonymous", 
+      userLevel = "A1", 
+      recentWords = [] 
+    } = context;
 
     let systemPrompt = `Você é um tutor de espanhol amigável e paciente.
 Nivel do usuário: ${userLevel}
@@ -20,27 +36,16 @@ Instruções:
     const prompt = `${systemPrompt}\n\nUsuário: ${userMessage}\n\nTutor:`;
 
     try {
-      const response = await fetch('http://ollama:11434/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: process.env.OLLAMA_MODEL || 'phi3',
-          prompt,
-          stream: false,
-          temperature: 0.7,
-          top_p: 0.9,
-          options: {
-            num_predict: 150
-          }
-        })
+      // Delegação de infraestrutura para o provedor de LLM
+      const ollamaData = await this.llm.generateText(prompt, {
+        temperature: 0.7,
+        top_p: 0.9,
+        num_predict: 150
       });
 
-      if (!response.ok) {
-        throw new Error(`Ollama API error: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      const text = data.response || '';
+      const text = ollamaData.response || '';
+      
+      // Limpeza estrita dos delimitadores textuais retornados
       let cleanedText = text.replace(/^[Tt]utor:\s*/, '').trim();
       cleanedText = cleanedText
         .replace(/\\n/g, ' ')
@@ -55,7 +60,7 @@ Instruções:
         userLevel,
         timestamp: new Date()
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
         message: 'Desculpe, não consegui gerar uma resposta. Tente novamente.',
@@ -64,14 +69,17 @@ Instruções:
         timestamp: new Date()
       };
     }
-  };
+  }
 
-  const generateContextFromUserProgress = (progressContext = {}) => {
-    const {
-      userLevel = 'A1',
-      recentWords = [],
-      totalAcertos = 0,
-      totalErros = 0
+  /**
+   * Mapeia os dados de evolução do aluno para contexto de conversação.
+   */
+  public generateContextFromUserProgress(progressContext: ChatContext = {}): ChatContext {
+    const { 
+      userLevel = 'A1', 
+      recentWords = [], 
+      totalAcertos = 0, 
+      totalErros = 0 
     } = progressContext;
 
     return {
@@ -80,12 +88,5 @@ Instruções:
       totalAcertos,
       totalErros
     };
-  };
-
-  return {
-    generateResponse,
-    generateContextFromUserProgress
-  };
-};
-
-export default ChatService();
+  }
+}

@@ -4,7 +4,7 @@ import Logger from "./shared/Logger.js";
 import OllamaChecker from "./shared/services/OllamaChecker.js";
 import { QuestionsService } from "./application/question.service.js";
 import { LocalOllama } from './shared/llm/ollama.provider.js';
-import { QuestionsRepository } from './shared/repository/QuestionsRepository.js';
+import { QuestionsRepository } from './shared/repository/questions.repository.js';
 import DI from './shared/di.js';
 
 dotenv.config({ path: new URL('./.env', import.meta.url).pathname });

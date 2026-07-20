@@ -1,4 +1,4 @@
-import Logger from "../../shared/Logger.js";
+import Logger from "../Logger.js";
 import { QuestionV1, QuestionCache, ParsedWordData } from "../../domain/models/questions.types.js";
 import { FileHandler, FileObject } from "../handler/file.handler.js";
 import { IQuestionsRepository } from "../../domain/repository/IQuestionsRepository.js";

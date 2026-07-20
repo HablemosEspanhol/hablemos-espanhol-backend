@@ -11,9 +11,5 @@ export interface AiConfigBody {
   prompt: string;
 }
 
-export interface LLMProvider {
-  generate(prompt: string, option: any): Promise<LLMResponse>
-}
-
 export interface LLMResponse { response: string }
 
