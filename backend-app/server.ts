@@ -10,8 +10,14 @@ import DI from './shared/di.js';
 dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
 
 const port = process.env.PORT || 3000;
+const enablePolling = process.env.ENABLE_POLL_QUESTIONS === "true";
 
 async function pollingQuestions() {
+    if(!enablePolling) {
+        Logger.warning("[LLM] Background PollingQuestions is disabled");
+        return;
+    }
+
     try {
         Logger.info("Lendo dados previamente salvos");
         await DI.QuestionsRepository.loadDataFromDisc();

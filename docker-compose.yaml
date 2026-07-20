@@ -41,6 +41,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
       PORT: ${PORT}
+      ENABLE_POLL_QUESTIONS: false
     volumes:
       - app_data:/app/data
 
