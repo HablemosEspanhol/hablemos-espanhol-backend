@@ -1,8 +1,8 @@
-import { QuestionsService } from "../../application/question.service.js";
-import { ExercisePhraseInput, GeneratedExercise, PublicExercise, SubmitValidationResult } from "../../domain/models/exercises.types.js";
-import { SubmitAnswerInput, CheckAnswerResult } from "../../domain/models/user-progress.types.js";
-import { IUserProgressRepository } from "../../domain/repository/IUserProgressRepository.js";
-import { IExerciseRepository } from "../../shared/repository/exercise.repository.js";
+import { QuestionsService } from "./question.service.js";
+import { ExercisePhraseInput, GeneratedExercise, PublicExercise, SubmitValidationResult } from "./exercises.types.js";
+import { SubmitAnswerInput, CheckAnswerResult } from "../user/user-progress.types.js";
+import { IUserProgressRepository } from "../user/iuser-progress.repository.js";
+import { IExerciseRepository } from "./exercise.repository.js";
 
 export interface CustomHttpError {
   status: number;

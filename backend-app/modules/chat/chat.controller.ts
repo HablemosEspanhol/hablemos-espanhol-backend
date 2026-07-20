@@ -1,8 +1,8 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { ChatService } from './chat.service.js';
 import Logger from '../../shared/Logger.js';
-import { IUserProgressRepository } from '../../domain/repository/IUserProgressRepository.js';
-import { BaseController } from '../base.controller.js';
+import { IUserProgressRepository } from '../user/iuser-progress.repository.js';
+import { BaseController } from '../../shared/base.controller.js';
 
 export class ChatController extends BaseController {
 

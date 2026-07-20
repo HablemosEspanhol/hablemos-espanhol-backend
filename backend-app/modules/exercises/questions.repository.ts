@@ -1,7 +1,7 @@
-import Logger from "../Logger.js";
-import { QuestionV1, QuestionCache, ParsedWordData } from "../../domain/models/questions.types.js";
-import { FileHandler, FileObject } from "../handler/file.handler.js";
-import { IQuestionsRepository } from "../../domain/repository/IQuestionsRepository.js";
+import Logger from "../../shared/Logger.js";
+import { QuestionV1, QuestionCache, ParsedWordData } from "./questions.types.js";
+import { FileHandler, FileObject } from "../../shared/handler/file.handler.js";
+import { IQuestionsRepository } from "./iquestions.repository.js";
 
 export class QuestionsRepository implements IQuestionsRepository {
   private questionsArray: QuestionV1[] = [];

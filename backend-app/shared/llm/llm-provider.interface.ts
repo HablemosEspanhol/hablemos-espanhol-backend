@@ -1,4 +1,4 @@
-import { LLMResponse } from "../models/llm.types.js";
+import { LLMResponse } from "./llm.types.js";
 
 export interface LLMProvider {
   model: string;

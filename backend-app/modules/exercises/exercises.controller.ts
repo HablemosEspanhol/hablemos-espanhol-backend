@@ -1,9 +1,9 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import Logger from '../../shared/Logger.js';
-import { PublicExercise, SubmitValidationResult } from '../../domain/models/exercises.types.js';
-import { SubmitAnswerInput, CheckAnswerResult } from '../../domain/models/user-progress.types.js';
+import { PublicExercise, SubmitValidationResult } from './exercises.types.js';
+import { SubmitAnswerInput, CheckAnswerResult } from '../user/user-progress.types.js';
 import { ExercisesService } from './exercises.service.js';
-import { BaseController } from '../base.controller.js';
+import { BaseController } from '../../shared/base.controller.js';
 
 export class ExercisesController extends BaseController{
 

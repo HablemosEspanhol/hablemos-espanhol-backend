@@ -1,8 +1,8 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import Logger from '../../shared/Logger.js';
-import { LevelPhrase, PaginatedPhrasesResponse } from '../../domain/models/questions.types.js';
-import { QuestionsService } from '../../application/question.service.js';
-import { BaseController } from '../base.controller.js';
+import { LevelPhrase, PaginatedPhrasesResponse } from '../exercises/questions.types.js';
+import { QuestionsService } from '../exercises/question.service.js';
+import { BaseController } from '../../shared/base.controller.js';
 
 export class PhrasesController extends BaseController{
 

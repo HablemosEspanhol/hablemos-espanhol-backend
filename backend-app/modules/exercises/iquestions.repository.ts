@@ -1,4 +1,4 @@
-import { QuestionV1, ParsedWordData, QuestionCache } from "../models/questions.types.js";
+import { QuestionV1, ParsedWordData, QuestionCache } from "./questions.types.js";
 
 export interface IQuestionsRepository {
   loadDataFromDisc(): Promise<void>;

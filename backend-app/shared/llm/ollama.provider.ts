@@ -1,6 +1,6 @@
 import { OLLAMA_URL } from "../config/LLMConfig.js";
-import { AiConfigBody, LLMResponse } from "../../domain/models/llm.types.js";
-import { LLMProvider } from "../../domain/services/LLMProvider.js";
+import { AiConfigBody, LLMResponse } from "./llm.types.js";
+import { LLMProvider } from "./llm-provider.interface.js";
 
 export class LocalOllama implements LLMProvider {
   

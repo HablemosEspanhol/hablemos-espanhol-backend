@@ -1,10 +1,10 @@
 
-import Logger from "../shared/Logger.js";
-import WordLoader from "../shared/services/WordLoader.js";
-import { isMock } from "../shared/config/cmd-args.config.js";
-import { QuestionV1, ParsedWordData, Frase, WordReviewItem, ExercisePhrase, LevelPhrase } from "../domain/models/questions.types.js";
-import { IQuestionsRepository } from "../domain/repository/IQuestionsRepository.js";
-import { LLMProvider } from "../domain/services/LLMProvider.js";
+import Logger from "../../shared/Logger.js";
+import WordLoader from "../../shared/services/word-loader.js";
+import { isMock } from "../../shared/config/cmd-args.config.js";
+import { QuestionV1, ParsedWordData, Frase, WordReviewItem, ExercisePhrase, LevelPhrase } from "./questions.types.js";
+import { IQuestionsRepository } from "./iquestions.repository.js";
+import { LLMProvider } from "../../shared/llm/llm-provider.interface.js";
 
 export class QuestionsService {
   constructor(

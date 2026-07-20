@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
 import app from "./app.js";
 import Logger from "./shared/Logger.js";
-import OllamaChecker from "./shared/services/OllamaChecker.js";
-import { QuestionsService } from "./application/question.service.js";
+import OllamaChecker from "./shared/services/ollama-checker.js";
+import { QuestionsService } from "./modules/exercises/question.service.js";
 import { LocalOllama } from './shared/llm/ollama.provider.js';
-import { QuestionsRepository } from './shared/repository/questions.repository.js';
+import { QuestionsRepository } from './modules/exercises/questions.repository.js';
 import DI from './shared/di.js';
 
 dotenv.config({ path: new URL('./.env', import.meta.url).pathname });

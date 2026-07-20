@@ -1,17 +1,17 @@
-import { QuestionsService } from "../application/question.service.js";
-import { IQuestionsRepository } from "../domain/repository/IQuestionsRepository.js";
-import { IUserProgressRepository } from "../domain/repository/IUserProgressRepository.js";
-import { LLMProvider } from "../domain/services/LLMProvider.js";
+import { QuestionsService } from "../modules/exercises/question.service.js";
+import { IQuestionsRepository } from "../modules/exercises/iquestions.repository.js";
+import { IUserProgressRepository } from "../modules/user/iuser-progress.repository.js";
+import { LLMProvider } from "./llm/llm-provider.interface.js";
 import { ChatController } from "../modules/chat/chat.controller.js";
 import { ChatService } from "../modules/chat/chat.service.js";
-import { ExerciseRepository, IExerciseRepository } from "./repository/exercise.repository.js";
+import { ExerciseRepository, IExerciseRepository } from "../modules/exercises/exercise.repository.js";
 import { ExercisesController } from "../modules/exercises/exercises.controller.js";
 import { ExercisesService } from "../modules/exercises/exercises.service.js";
-import { UserProgressRepository } from "./repository/user-progress.repository.js";
+import { UserProgressRepository } from "../modules/user/user-progress.repository.js";
 import { PhrasesController } from "../modules/phrases/phrases.controller.js";
 import { SwaggerController } from "../modules/swagger/swagger.controller.js";
 import { LocalOllama } from "./llm/ollama.provider.js";
-import { QuestionsRepository } from "./repository/questions.repository.js";
+import { QuestionsRepository } from "../modules/exercises/questions.repository.js";
 
 const llmProvider: LLMProvider = new LocalOllama();
 const questionsRepository: IQuestionsRepository = new QuestionsRepository();

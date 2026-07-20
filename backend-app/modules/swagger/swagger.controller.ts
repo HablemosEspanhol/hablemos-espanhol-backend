@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './swagger.js';
-import { BaseController } from '../base.controller.js';
+import { BaseController } from '../../shared/base.controller.js';
 
 export class SwaggerController extends BaseController{
     initializeRoutes(router: Router) {

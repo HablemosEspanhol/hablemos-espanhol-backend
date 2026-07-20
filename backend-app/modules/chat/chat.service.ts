@@ -1,5 +1,5 @@
-import { ChatContext, ChatServiceResponse } from "../../domain/models/chat.types.js";
-import { LLMProvider } from "../../domain/services/LLMProvider.js";
+import { ChatContext, ChatServiceResponse } from "./chat.types.js";
+import { LLMProvider } from "../../shared/llm/llm-provider.interface.js";
 
 export class ChatService {
   // O serviço consome o contrato do provedor injetado
