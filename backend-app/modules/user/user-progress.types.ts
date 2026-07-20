@@ -1,3 +1,5 @@
+import { RowDataPacket } from "mysql2/promise";
+
 export interface UserProgress {
   id: number;
   username: string;
@@ -41,4 +43,45 @@ export interface PhraseProgressResult {
   score: number;
   seg_sem_ver: number;
   isInRecentCooldown: boolean;
+}
+
+export interface DbExerciseMapItem {
+  instance_id: string;
+  exercise_id: string;
+  correct_answer: string;
+  phrase: string;
+}
+
+export interface DbRawPhraseProgress {
+  phrase: string;
+  wrong_count: number;
+  correct_count: number;
+  last_seen_at: Date;
+}
+
+export interface UserProgressRow extends RowDataPacket {
+  id: number;
+  username: string;
+  current_level: string;
+  total_correct: number;
+  total_incorrect: number;
+  last_activity: string | Date;
+}
+
+export interface ExerciseMapRow extends RowDataPacket {
+  instance_id: string;
+  exercise_id: string;
+  correct_answer: string;
+  phrase: string;
+}
+
+export interface PhraseRow extends RowDataPacket {
+  phrase: string;
+}
+
+export interface PhraseProgressRow extends RowDataPacket {
+  phrase: string;
+  wrong_count: string | number;
+  correct_count: string | number;
+  last_seen_at: string | Date;
 }

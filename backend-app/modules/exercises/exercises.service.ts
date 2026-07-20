@@ -3,6 +3,7 @@ import { ExercisePhraseInput, GeneratedExercise, PublicExercise, SubmitValidatio
 import { SubmitAnswerInput, CheckAnswerResult } from "../user/user-progress.types.js";
 import { IUserProgressRepository } from "../user/iuser-progress.repository.js";
 import { IExerciseRepository } from "./exercise.repository.js";
+import { UserProgressService } from "../user/user-progress.service.js";
 
 export interface CustomHttpError {
   status: number;
@@ -14,6 +15,7 @@ export class ExercisesService {
   constructor(
     private readonly exerciseRepository: IExerciseRepository,
     private readonly userProgressRepository: IUserProgressRepository,
+    private readonly userProgressService: UserProgressService,
     private readonly questionsService: QuestionsService
   ) {}
 
@@ -22,7 +24,7 @@ export class ExercisesService {
    */
   public async getExercisesByUsername(username: string): Promise<PublicExercise[]> {
     const userLevel = await this.userProgressRepository.getUserLevel(username);
-    const phrasesToReview = await this.userProgressRepository.getPhraseProgress(username, 5);
+    const phrasesToReview = await this.userProgressService.getPhraseProgress(username, 5);
     
     const phrases = this.questionsService.getPhrasesForExercises(userLevel, 10, phrasesToReview);
     
@@ -32,7 +34,7 @@ export class ExercisesService {
     }
 
     const exercises = this.exerciseRepository.generateExercises(phrases);
-    await this.userProgressRepository.storeExercises(username, exercises);
+    await this.userProgressService.storeExercises(username, exercises);
 
     // Mapeia removendo dados confidenciais de validação interna
     const publicExercises = exercises.map(
@@ -55,7 +57,7 @@ export class ExercisesService {
       throw { status: 400, error: 'Invalid request body' } as CustomHttpError;
     }
 
-    const result = await this.userProgressRepository.checkExerciseAnswer(username, answer);
+    const result = await this.userProgressService.checkExerciseAnswer(username, answer);
 
     if (!result) {
       throw { status: 404, error: 'Exercise not found for user' } as CustomHttpError;
@@ -85,7 +87,7 @@ export class ExercisesService {
       } as CustomHttpError;
     }
 
-    const result = await this.userProgressRepository.updateProgress(username, answers);
+    const result = await this.userProgressService.updateProgress(username, answers);
 
     let message = '';
     if (result.accuracy >= 80) {

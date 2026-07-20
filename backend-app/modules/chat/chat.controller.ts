@@ -3,13 +3,14 @@ import { ChatService } from './chat.service.js';
 import Logger from '../../shared/Logger.js';
 import { IUserProgressRepository } from '../user/iuser-progress.repository.js';
 import { BaseController } from '../../shared/base.controller.js';
+import { UserProgressService } from '../user/user-progress.service.js';
 
 export class ChatController extends BaseController {
 
   // Recebe as dependências da aplicação através do construtor
   constructor(
     private readonly chatService: ChatService,
-    private readonly userProgressRepository: IUserProgressRepository
+    private readonly userProgressService: UserProgressService
   ) {
     super();
   }
@@ -35,8 +36,8 @@ export class ChatController extends BaseController {
       }
 
       // Interage estritamente com as dependências injetadas
-      await this.userProgressRepository.getOrCreateUser(username);
-      const context = await this.userProgressRepository.getUserChatContext(username);
+      await this.userProgressService.getOrCreateUser(username);
+      const context = await this.userProgressService.getUserChatContext(username);
       
       const chatResponse = await this.chatService.generateResponse(message, {
         username,
