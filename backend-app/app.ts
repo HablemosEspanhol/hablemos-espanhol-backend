@@ -1,10 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import Logger from './shared/Logger.js';
-import exercisesRoutes from './modules/exercises/exercises.controller.js';
-import swaggerController from './modules/swagger/swagger.controller.js';
-import phrasesController from './modules/phrases/phrases.controller.js';
-import chatController from './modules/chat/chat.controller.js'
+import DI from './shared/di.js';
 
 const app = express();
 app.use(express.json());
@@ -12,12 +9,12 @@ app.use(cookieParser());
 
 
 app.get('/', (req, res) => res.send("OK"));
-app.use('/api/exercises', exercisesRoutes);
-app.use('/api/phrases', phrasesController);
-app.use('/api/chat', chatController);
-app.use('/swagger', swaggerController);
+app.use('/api/exercises', DI.ExercisesController.getRouter());
+app.use('/api/phrases', DI.PhraseController.getRouter());
+app.use('/api/chat', DI.ChatController.getRouter());
+app.use('/swagger', DI.SwaggerController.getRouter());
 
-app.use((err, req, res, next) => {
+app.use((err: any, req: any, res: any, next: any) => {
     Logger.error(err);
     const status = err.status || 500;
     const mensagem = err.message || 'Erro interno no servidor';

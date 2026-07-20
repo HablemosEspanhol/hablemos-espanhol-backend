@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "outDir": "./dist",
+    "rootDir": "./",                               /* Permite ler a raiz se seus arquivos ainda não estão em /src */
+    "allowJs": true,                               /* 💡 ESSENCIAL: Permite que arquivos .js sejam compilados/carregados */
+    "checkJs": false,                              /* 💡 Defina como false para o TS não apontar erros de tipo nos seus .js antigos */
+    "strict": true,                                /* Mantém checagem estrita apenas nos arquivos .ts novos */
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["**/*"],                             /* Varre todo o projeto */
+  "exclude": ["node_modules", "dist", "tests"]     /* Ignora pastas de build e testes antigos se preferir */
+}

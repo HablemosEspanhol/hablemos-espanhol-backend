@@ -6,11 +6,13 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-API="http://localhost:3000"
-# API="http://192.168.15.11:3000"
+# API="http://localhost:3000"
+API="http://192.168.15.11:3002"
 PASS=0
 FAIL=0
 TARGET_TEST=""
+
+clear
 
 # Parse command line arguments
 if [ $# -eq 1 ] && [[ "$1" =~ ^[0-9]+[A-Za-z]?$ ]]; then

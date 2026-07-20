@@ -1,0 +1,43 @@
+import dotenv from 'dotenv';
+import app from "./app.js";
+import Logger from "./shared/Logger.js";
+import OllamaChecker from "./shared/services/ollama-checker.js";
+import { QuestionsService } from "./modules/exercises/question.service.js";
+import { LocalOllama } from './shared/llm/ollama.provider.js';
+import { QuestionsRepository } from './modules/exercises/questions.repository.js';
+import DI from './shared/di.js';
+
+dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
+
+const port = process.env.PORT || 3000;
+const enablePolling = process.env.ENABLE_POLL_QUESTIONS === "true";
+
+async function pollingQuestions() {
+    if(!enablePolling) {
+        Logger.warning("[LLM] Background PollingQuestions is disabled");
+        return;
+    }
+
+    try {
+        Logger.info("Lendo dados previamente salvos");
+        await DI.QuestionsRepository.loadDataFromDisc();
+
+        if(await OllamaChecker.checkModels(DI.LocalOllama.model)) {
+            DI.QuestionsService.pollingQuestions();
+        } else {
+            Logger.warning("Modelo de IA indisponivel no OLLAMA");
+            setTimeout(()=> {
+                Logger.info("RETRY pollingQuestions()")
+                pollingQuestions();
+            }, 60000)
+        }
+    } catch (error) {
+        Logger.error("Error on pollingQuestions()", error)
+    }    
+}
+
+pollingQuestions();
+
+app.listen(port, () => {
+    Logger.info(`Servidor rodando em http://localhost:${port}`);
+});
