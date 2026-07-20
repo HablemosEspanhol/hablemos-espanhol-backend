@@ -12,6 +12,8 @@ PASS=0
 FAIL=0
 TARGET_TEST=""
 
+clear
+
 # Parse command line arguments
 if [ $# -eq 1 ] && [[ "$1" =~ ^[0-9]+[A-Za-z]?$ ]]; then
   TARGET_TEST="$1"
