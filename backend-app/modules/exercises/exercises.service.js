@@ -1,14 +1,14 @@
 import UserProgressRepository from "./user-progress.repository.js";
 import ExerciseRepository from "./exercise.repository.js";
-import QuestionsRepository from "./questions.repository.js";
+import DI from '../../shared/di.js';
 
 const ExercisesService = {
     getExercisesByUsername: async (username) => {
         const userLevel = await UserProgressRepository.getUserLevel(username);
         const phrasesToReview = await UserProgressRepository.getPhraseProgress(username, 5);
-        const phrases = QuestionsRepository.getPhrasesForExercises(userLevel, 10, phrasesToReview);
+        const phrases = DI.QuestionsService.getPhrasesForExercises(userLevel, 10, phrasesToReview);
         if (phrases.length < 10) {
-            const fallbackPhrases = QuestionsRepository.getPhrasesForExercises('A1', 10);
+            const fallbackPhrases = DI.QuestionsService.getPhrasesForExercises('A1', 10);
             phrases.push(...fallbackPhrases.slice(0, 10 - phrases.length));
         }
 

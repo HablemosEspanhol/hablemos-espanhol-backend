@@ -1,19 +1,17 @@
 import { isMock } from "../config/cmd-args.config.js";
 import Logger from "../Logger.js";
-
-var url = "http://ollama:11434";
+import { OLLAMA_URL } from "../config/LLMConfig.js";
 
 function OllamaChecker() {
 
     return {
-        setUrl: (newUrl) => url = newUrl,
         checkModels: async (model) => {
             try {
                 if (isMock) return Promise.resolve();
 
                 Logger.info("Checking IA model " + model)
 
-                const res = await fetch(url + "/api/tags", {
+                const res = await fetch(OLLAMA_URL + "/api/tags", {
                     method: "GET",
                     headers: { "Content-Type": "application/json" },
                 })

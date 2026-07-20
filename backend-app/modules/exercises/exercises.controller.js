@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 // POST /api/exercises/submit
 router.post('/submit', async (req, res) => {
   try {
-    console.log(req.body);
+    Logger.info(req.body);
     const { username, answers } = req.body;
     var response = await ExercisesService.validateExercise(username, answers);
     res.json(response);

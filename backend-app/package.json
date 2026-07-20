@@ -8,6 +8,7 @@
   "main": "server.js",
   "scripts": {
     "dev": "tsx watch server.js",
+    "dev:mock": "tsx watch server.js --mock",
     "start": "node dist/server.js",
     "start:mock": "node dist/server.js --mock",
     "build": "tsc",
