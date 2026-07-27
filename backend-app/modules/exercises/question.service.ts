@@ -75,14 +75,19 @@ export class QuestionsService {
 
       for (const word of words) {
         if (!nivelCache[word]) {
-          Logger.info(`Gerando Questões para a palavra ${word} no nivel ${nivel}`);
+          Logger.info(`[QuestionsService] Gerando Questões para a palavra ${word} no nivel ${nivel}`);
           const begin = Date.now();
           
-          await this.generateQuestionsFromWord(word, nivel, from, to);
+          var response = await this.generateQuestionsFromWord(word, nivel, from, to);
           
           const end = Date.now();
           const duration = (end - begin) / 1000 / 60;
-          Logger.info(`Geradas Questões para a palavra ${word} no nivel ${nivel}. Duração: ${duration.toFixed(2)} min`);
+          if(response) {
+            Logger.info(`[QuestionsService] Geradas Questões para a palavra ${word} no nivel ${nivel}`);
+          } else {
+            Logger.info(`[QuestionsService] Ocorreu um erro na geração das questões da palavra ${word} no nivel ${nivel}`);
+          }
+          Logger.info(`[QuestionsService] Duração: ${duration.toFixed(2)} min`);
           
           await this.delay(30 * 1000);
         }
