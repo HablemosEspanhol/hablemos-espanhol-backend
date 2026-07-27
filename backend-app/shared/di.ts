@@ -13,8 +13,10 @@ import { SwaggerController } from "../modules/swagger/swagger.controller.js";
 import { LocalOllama } from "./llm/ollama.provider.js";
 import { QuestionsRepository } from "../modules/exercises/questions.repository.js";
 import { UserProgressService } from "../modules/user/user-progress.service.js";
+import { GeminiLLMProvider } from "./llm/gemini.provider.js";
 
-const llmProvider: LLMProvider = new LocalOllama();
+// const llmProvider: LLMProvider = new LocalOllama();
+const llmProvider: LLMProvider = new GeminiLLMProvider();
 const questionsRepository: IQuestionsRepository = new QuestionsRepository();
 const userProgressRepository: IUserProgressRepository = new UserProgressRepository();
 const exercisesRepository: IExerciseRepository = new ExerciseRepository();

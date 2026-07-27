@@ -1,8 +1,9 @@
-import { LLMResponse } from "./llm.types.js";
+import { LLMProviderGenerateOptions, LLMResponse } from "./llm.types.js";
 
 export interface LLMProvider {
   model: string;
-  generate(prompt: string, option: any): Promise<LLMResponse>
+  providerName: string;
+  generate(prompt: string, options?: LLMProviderGenerateOptions): Promise<LLMResponse>
   /**
    * Executa uma requisição de geração de texto livre para interações abertas (como chat).
    * @param prompt O texto completo formatado contendo as instruções do sistema e fala do usuário.
@@ -10,6 +11,12 @@ export interface LLMProvider {
    */
   generateText(
     prompt: string, 
-    options?: { temperature?: number; top_p?: number; num_predict?: number }
+    options?: LLMProviderGenerateOptions
   ): Promise<{ response: string }>;
+
+  /**
+   * Verifica se um modelo específico está baixado e disponível no Ollama local.
+   * Retorna true se estiver disponível (ou se estiver rodando em modo Mock).
+   */
+  checkModels(model: string, isMock: boolean): Promise<boolean>;
 }

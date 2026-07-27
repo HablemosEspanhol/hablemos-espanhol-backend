@@ -1,11 +1,8 @@
 import dotenv from 'dotenv';
 import app from "./app.js";
 import Logger from "./shared/Logger.js";
-import OllamaChecker from "./shared/services/ollama-checker.js";
-import { QuestionsService } from "./modules/exercises/question.service.js";
-import { LocalOllama } from './shared/llm/ollama.provider.js';
-import { QuestionsRepository } from './modules/exercises/questions.repository.js';
 import DI from './shared/di.js';
+import { isMock } from './shared/config/cmd-args.config.js';
 
 dotenv.config({ path: new URL('./.env', import.meta.url).pathname });
 
@@ -22,10 +19,12 @@ async function pollingQuestions() {
         Logger.info("Lendo dados previamente salvos");
         await DI.QuestionsRepository.loadDataFromDisc();
 
-        if(await OllamaChecker.checkModels(DI.LocalOllama.model)) {
+        var llmProvider = DI.LocalOllama;
+
+        if(await llmProvider.checkModels(llmProvider.model, isMock)) {
             DI.QuestionsService.pollingQuestions();
         } else {
-            Logger.warning("Modelo de IA indisponivel no OLLAMA");
+            Logger.warning("Modelo de IA indisponivel no "+llmProvider.providerName.toUpperCase());
             setTimeout(()=> {
                 Logger.info("RETRY pollingQuestions()")
                 pollingQuestions();
