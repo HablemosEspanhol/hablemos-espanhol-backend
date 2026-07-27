@@ -6,6 +6,8 @@ import { QuestionV1, ParsedWordData, Frase, WordReviewItem, ExercisePhrase, Leve
 import { IQuestionsRepository } from "./iquestions.repository.js";
 import { LLMProvider } from "../../shared/llm/llm-provider.interface.js";
 
+const EVERY_TWO_MINUTES = 120 * 1000;
+
 export class QuestionsService {
   constructor(
     private readonly repository: IQuestionsRepository,
@@ -84,12 +86,15 @@ export class QuestionsService {
           const duration = (end - begin) / 1000 / 60;
           if(response) {
             Logger.info(`[QuestionsService] Geradas Questões para a palavra ${word} no nivel ${nivel}`);
+            Logger.info(response);
           } else {
             Logger.info(`[QuestionsService] Ocorreu um erro na geração das questões da palavra ${word} no nivel ${nivel}`);
           }
           Logger.info(`[QuestionsService] Duração: ${duration.toFixed(2)} min`);
+
+          Logger.info(`[QuestionsService] Aguardando ${EVERY_TWO_MINUTES/1000/60} minutos para consultar nova palavra...`);
           
-          await this.delay(30 * 1000);
+          await this.delay(EVERY_TWO_MINUTES);
         }
       }
     }
@@ -117,17 +122,22 @@ export class QuestionsService {
         throw new Error("resposta invalida: " + response);      
       }
 
+      // Logger.info("LLMResponse: ", response);
+
       const frases: Frase[] = response
         .split('\n')
         .filter(l => l.includes(';'))
         .map(x => {
           let [texto, traduccion] = x.replaceAll('"', "").split(';');
           traduccion = traduccion.split('/')[0].trim();
-          texto = (texto.includes(".") ? texto.split(".")[1] : texto).trim();
+          texto = (this.llm.model.includes("phi3:mini") && texto.includes(".") ? texto.split(".")[1] : texto).trim();
           return { texto, traduccion };
         });
 
       const parsed: ParsedWordData = { palavra: word, frases };
+
+      // Logger.info("Formatada: ", parsed);
+
       
       if (parsed.palavra === word) {
         await this.repository.updateNivelCache(nivel, word, parsed);

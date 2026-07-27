@@ -8,11 +8,12 @@ const ONE_SECOND = 1000;
 
 export class GeminiLLMProvider implements LLMProvider {
     
-    public readonly model: string = "gemini-flash-latest";
+    // public readonly model: string = "gemini-flash-latest";
+    public readonly model: string = "gemini-3.5-flash";
     public readonly providerName: string = this.constructor.name;
     private baseAddress = "https://generativelanguage.googleapis.com";
     private _apiKey: string = GEMINI_API_KEY;
-    timeoutMs: number = BASE_TIMEOUT;
+    timeoutMs: number = BASE_TIMEOUT;    
     async generate(prompt: string, option: LLMProviderGenerateOptions): Promise<LLMResponse> {
         var url = `${this.baseAddress}/v1beta/models/${this.model}:generateContent?key=${this._apiKey}`;
         var payload = {
@@ -144,9 +145,7 @@ export class GeminiLLMProvider implements LLMProvider {
             if (!res.ok) {
                this.errorHandler(res, data);
                return false;
-            }
-
-            
+            }            
 
             if (data.models && Array.isArray(data.models)) {
                 // O Gemini retorna o nome no formato "models/gemini-2.5-flash"

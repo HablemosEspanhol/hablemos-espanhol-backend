@@ -1,5 +1,6 @@
 import { ChatContext, ChatServiceResponse } from "./chat.types.js";
 import { LLMProvider } from "../../shared/llm/llm-provider.interface.js";
+import Logger from "../../shared/Logger.js";
 
 export class ChatService {
   // O serviço consome o contrato do provedor injetado
@@ -35,15 +36,19 @@ Instruções:
 
     const prompt = `${systemPrompt}\n\nUsuário: ${userMessage}\n\nTutor:`;
 
+    Logger.info(`[Chat] [${username}] userMessage: ${userMessage}`);
+
     try {
       // Delegação de infraestrutura para o provedor de LLM
       const ollamaData = await this.llm.generateText(prompt, {
         temperature: 0.7,
         top_p: 0.9,
-        num_predict: 150
+        num_predict: 500
       });
 
       const text = ollamaData.response || '';
+
+      Logger.info(`[Char] Raw response ${text}`);
       
       // Limpeza estrita dos delimitadores textuais retornados
       let cleanedText = text.replace(/^[Tt]utor:\s*/, '').trim();
@@ -53,6 +58,8 @@ Instruções:
         .replace(/\s+/g, ' ')
         .trim();
 
+      Logger.info(`[Chat] [${username}] LLMResponse: ${cleanedText}`);
+
       return {
         success: true,
         message: cleanedText,
@@ -61,6 +68,7 @@ Instruções:
         timestamp: new Date()
       };
     } catch (error: any) {
+      Logger.error("[Chat] Error: "+error);
       return {
         success: false,
         message: 'Desculpe, não consegui gerar uma resposta. Tente novamente.',
