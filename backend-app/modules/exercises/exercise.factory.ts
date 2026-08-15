@@ -16,12 +16,12 @@ export class ExerciseRepository implements IExerciseFactory {
   /**
    * Cria um hash estável determinístico baseado nos dados da palavra.
    */
-  public createStableExerciseId({ palavra }: { palavra: string }): string {
-    const normalizedPayload = JSON.stringify({
-      palavra: String(palavra ?? '').trim()
-    });
-
-    return crypto.createHash('sha256').update(normalizedPayload).digest('hex').slice(0, 36);
+  public createStableExerciseId(data: { palavra: string, question: string, type: string }): string {
+    const palavra = (data.palavra || '').trim().toLowerCase();
+    const question = (data.question || '').trim().toLowerCase();
+    const type = (data.type || '').trim().toLowerCase();
+    const payload = `${type}:${palavra}:${question}`;
+    return crypto.createHash('sha256').update(payload).digest('hex').slice(0, 36);
   }
 
   /**
