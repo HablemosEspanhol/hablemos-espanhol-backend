@@ -7,12 +7,12 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "dev": "tsc && tsx watch server.js",
-    "dev:mock": "tsc && tsx watch server.js --mock",
+    "dev": "tsx watch server.js",
+    "dev:mock": "tsx watch server.js --mock",
     "start": "node dist/server.js",
     "start:mock": "node dist/server.js --mock",
     "build": "tsc",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test": "jest",
     "test:api": "tsx tests/api-tests.js"
   },
   "dependencies": {
