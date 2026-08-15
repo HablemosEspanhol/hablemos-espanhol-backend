@@ -16,9 +16,6 @@ async function pollingQuestions() {
     }
 
     try {
-        Logger.info("Lendo dados previamente salvos");
-        await DI.QuestionsRepository.loadDataFromDisc();
-
         var llmProvider = DI.LLMProvider;
 
         if(await llmProvider.checkModels(llmProvider.model, isMock)) {
@@ -35,6 +32,16 @@ async function pollingQuestions() {
     }    
 }
 
+async function populateCache() {
+    try{
+        Logger.info("Lendo dados previamente salvos");
+        await DI.QuestionsRepository.loadDataFromDisc();
+    } catch(error: any) {
+        Logger.error("Error when population cache", error);
+    }
+}
+
+await populateCache();
 pollingQuestions();
 
 app.listen(port, () => {
