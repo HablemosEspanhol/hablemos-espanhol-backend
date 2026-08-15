@@ -5,12 +5,18 @@ export interface ExercisePhraseInput {
   traduccion: string;
 }
 
+export interface ExercisePhraseInput {
+  palavra: string;
+  texto: string;
+  traduccion: string;
+}
+
 export interface GeneratedExercise {
   id: string;
   instanceId: string;
-  type: string;
+  type: 'translation' | 'fill_blank' | 'multiple_choice';
   question: string;
-  options?: string[] | null;
+  options?: (string | null)[] | null;
   correctAnswer: string;
   palavra: string;
 }

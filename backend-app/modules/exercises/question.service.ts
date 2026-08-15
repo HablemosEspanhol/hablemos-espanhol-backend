@@ -33,6 +33,95 @@ export class QuestionsService {
     return selectedQuestions;
   }
 
+  /**
+   * Seleciona N palavras aleatórias do banco de dados de palavras.
+   */
+  public async selectRandomWords(count: number): Promise<string[]> {
+    try {
+      const selectedWords = await WordLoader.load(count);
+      return selectedWords;
+    } catch (error) {
+      Logger.error(`[QuestionsService] Erro ao selecionar ${count} palavras aleatórias:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Gera frases para exercícios usando IA com um único prompt para todas as palavras.
+   * Retorna um array de ExercisePhrase[] com base nas palavras fornecidas.
+   * Se falhar, retorna array vazio (sem lançar exceção) para permitir fallback em ExercisesService.
+   */
+  public async generatePhrasesFromWordsUsingAI(
+    level: string,
+    numberOfPhrases: number = 10
+  ): Promise<ExercisePhrase[]> {
+    const wordCount = Math.ceil(numberOfPhrases / 2);
+    
+    // Seleciona palavras aleatórias
+    const words = await this.selectRandomWords(wordCount);
+    if (words.length === 0) {
+      Logger.warning(`[QuestionsService] Nenhuma palavra selecionada para generatePhrasesFromWordsUsingAI`);
+      return [];
+    }
+
+    Logger.info(`[QuestionsService] Gerando frases para ${words.length} palavras via IA (nível ${level})`);
+
+    const wordsJson = JSON.stringify(words);
+    const prompt = `Retorne apenas JSON válido. Para cada palavra, gere 2 frases curtas (máximo 80 caracteres) em espanhol com tradução em português.
+
+Formato exato: { "palavra1": [{"frase": "...", "traduccion": "..."}, {"frase": "...", "traduccion": "..."}], "palavra2": [...], ... }
+
+Palavras: ${wordsJson}
+
+Importante: Retorne APENAS o JSON, nenhum outro texto.`;
+
+    try {
+      const result = await Promise.race([
+        this.llm.generate(prompt, { temperature: 0, top_p: 0.1, repeat_penalty: 1.2 }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("Timeout no Gemini")), 30000)
+        )
+      ]);
+
+      const response = result.response.trim();
+
+      // Tenta fazer o parse do JSON
+      const parsed = JSON.parse(response);
+
+      const phrases: ExercisePhrase[] = [];
+
+      // Transforma a resposta estruturada em array de ExercisePhrase
+      for (const palavra in parsed) {
+        const frazesList = parsed[palavra];
+        if (!Array.isArray(frazesList)) continue;
+
+        for (const item of frazesList) {
+          if (item?.frase && item?.traduccion) {
+            phrases.push({
+              palavra,
+              texto: (item.frase as string).trim(),
+              traduccion: (item.traduccion as string).trim()
+            });
+          }
+        }
+      }
+
+      // Valida se obteve frases suficientes
+      if (phrases.length >= numberOfPhrases) {
+        Logger.info(`[QuestionsService] ✅ Geradas ${phrases.length} frases via IA`);
+        return phrases;
+      } else {
+        Logger.warning(
+          `[QuestionsService] Frases insuficientes: esperado ${numberOfPhrases}, obtido ${phrases.length}`
+        );
+        return phrases; // Retorna o que conseguiu (fallback será usado)
+      }
+    } catch (error) {
+      Logger.error(`[QuestionsService] Erro ao gerar frases com IA:`, error);
+      return []; // Retorna vazio para permitir fallback
+    }
+  }
+
   public async executeFetch(): Promise<void> {
     Logger.info("[OLLAMA] Fazendo pooling de perguntas");
     const amountOfQuestionToPull = 3;
@@ -192,20 +281,25 @@ export class QuestionsService {
     };
 
     appendLevel(level);
+    Logger.info("[getPhrasesForExercises] 2. get level phrases from cache");
 
     if (allPhrases.length < amount) {
       Object.keys(cacheComplete).forEach(otherLvl => {
         if (otherLvl !== level) appendLevel(otherLvl);
       });
+      Logger.info("[getPhrasesForExercises] 2.2 fallback if has fewer phrases than "+amount);
     }
 
     const filtered = allPhrases.filter(p => p?.texto?.trim() && p?.traduccion?.trim());
+    Logger.info("[getPhrasesForExercises] 3. filter only valid phrases");
     const phrasesByWord = new Map<string, ExercisePhrase[]>();
     
     for (const phrase of filtered) {
       if (!phrasesByWord.has(phrase.palavra)) phrasesByWord.set(phrase.palavra, []);
       phrasesByWord.get(phrase.palavra)!.push(phrase);
     }
+
+    Logger.info("[getPhrasesForExercises] 4. group phrases by word");
 
     const shuffle = <T>(array: T[]): T[] => [...array].sort(() => Math.random() - 0.5);
     const shuffled = shuffle(filtered);
@@ -222,6 +316,8 @@ export class QuestionsService {
       }
     }
 
+    Logger.info("[getPhrasesForExercises] 5. shuffle wordsToReview and add to selected");
+
     for (const phrase of shuffled) {
       if (selected.length >= amount) break;
       const key = `${phrase.texto}-${phrase.traduccion}`;
@@ -230,6 +326,9 @@ export class QuestionsService {
         selected.push(phrase);
       }
     }
+
+    Logger.info("[getPhrasesForExercises] 6. complement selected with unseen phrases");
+
     return selected;
   }
 

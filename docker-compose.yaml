@@ -24,9 +24,7 @@ services:
   #      wait"
 
   hablemos-espanhol-backend:
-    build:
-      context: ./backend-app
-      dockerfile: Dockerfile
+    build: ./backend-app
     ports:
       - "${PORT}:${PORT}"
     extra_hosts:

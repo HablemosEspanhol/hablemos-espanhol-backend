@@ -59,7 +59,6 @@ Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis de ambient
 ```env
 PORT=3000
 DB_PORT=3306
-DB_HOST=mysql
 DB_NAME=hablemos_espanhol
 DB_USER=seu_usuario
 DB_PASSWORD=sua_senha
@@ -67,3 +66,4 @@ MYSQL_ROOT_PASSWORD=sua_senha_root
 MYSQL_DATABASE=hablemos_espanhol
 MYSQL_USER=seu_usuario
 MYSQL_PASSWORD=sua_senha
+```
