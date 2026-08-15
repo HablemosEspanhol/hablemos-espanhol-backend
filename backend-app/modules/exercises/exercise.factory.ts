@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { ExercisePhraseInput, GeneratedExercise } from './exercises.types.js';
+import Logger from '../../shared/Logger.js';
 
 // --- Interfaces de Tipagem ---
 

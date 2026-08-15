@@ -4,6 +4,7 @@ import { SubmitAnswerInput, CheckAnswerResult } from "../user/user-progress.type
 import { IUserProgressRepository } from "../user/iuser-progress.repository.js";
 import { IExerciseFactory } from "./exercise.factory.js";
 import { UserProgressService } from "../user/user-progress.service.js";
+import Logger from "../../shared/Logger.js";
 
 export interface CustomHttpError {
   status: number;
@@ -12,6 +13,8 @@ export interface CustomHttpError {
 
 // --- Classe do Serviço ---
 export class ExercisesService {
+
+  private minimunExerciseAmount = 10;
   
   constructor(
     private readonly exerciseFactory: IExerciseFactory,
@@ -22,37 +25,88 @@ export class ExercisesService {
 
   public async getExercisesByUsernameUsingAI(username: string): Promise<PublicExercise[]> {
     const userLevel = await this.userProgressRepository.getUserLevel(username);
-    //1. pedir ao questionsService para retornar 10 questões:
-    //  dentro do método ele deverá buscar 5 palavras da lista de palavras
-    //  criar um prompt que crie duas frases para cada palavra
-    //  retornar como ExercisePhrase[]
+    
+    // 1. Tenta gerar frases com IA
+    let phrases = await this.questionsService.generatePhrasesFromWordsUsingAI(
+      userLevel,
+      this.minimunExerciseAmount
+    );
 
-    // 2. gerar exercicios com a exerciseFactory
-    // 3. armazenar esses exercicios this.userProgressService.storeExercises(username, exercises)
-    // 4. retornar ao chamador uma lista de PublicExercise[]
+    // 2. Fallback 1: Se IA não conseguir, tenta cache do nível do usuário
+    if (phrases.length < this.minimunExerciseAmount) {
+      const cachePhrases = this.questionsService.getPhrasesForExercises(
+        userLevel,
+        this.minimunExerciseAmount
+      );
+      phrases.push(...cachePhrases.slice(0, this.minimunExerciseAmount - phrases.length));
+    }
+
+    // 3. Fallback 2: Se ainda insuficiente, tenta outros níveis
+    if (phrases.length < this.minimunExerciseAmount) {
+      const niveis = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+      for (const nivel of niveis) {
+        if (nivel === userLevel) continue; // Já tentou
+        const fallbackPhrases = this.questionsService.getPhrasesForExercises(
+          nivel,
+          this.minimunExerciseAmount
+        );
+        phrases.push(...fallbackPhrases.slice(0, this.minimunExerciseAmount - phrases.length));
+        
+        if (phrases.length >= this.minimunExerciseAmount) break;
+      }
+    }
+
+    // 4. Se ainda não tiver o mínimo, lança erro
+    if (phrases.length < this.minimunExerciseAmount) {
+      throw {
+        status: 500,
+        error: `Insufficient phrases available even with fallback (got ${phrases.length}, needed ${this.minimunExerciseAmount})`
+      } as CustomHttpError;
+    }
+
+    // 5. Gera exercícios com as frases coletadas
+    const exercises = this.exerciseFactory.generateExercises(phrases);
+    
+    // 6. Armazena para histórico do usuário
+    await this.userProgressService.storeExercises(username, exercises);
+
+    // 7. Retorna resposta pública (sem dados sensíveis)
+    const publicExercises = exercises.map(
+      ({ correctAnswer, instanceId, ...exercise }) => exercise
+    );
+    
+    return publicExercises as PublicExercise[];
   }
+
 
   /**
    * Obtém e gera o conjunto de exercícios customizado baseado no nível e histórico do aluno.
    */
   public async getExercisesByUsername(username: string): Promise<PublicExercise[]> {
     const userLevel = await this.userProgressRepository.getUserLevel(username);
+    Logger.info("1. User Level="+userLevel);
     const phrasesToReview = await this.userProgressService.getPhraseProgress(username, 5);
+    Logger.info("2. phrasesToReview=");
+    const phrases = this.questionsService.getPhrasesForExercises(userLevel, this.minimunExerciseAmount, phrasesToReview);
+    Logger.info("3. getPhrasesForExercises=");
     
-    const phrases = this.questionsService.getPhrasesForExercises(userLevel, 10, phrasesToReview);
-    
-    if (phrases.length < 10) {
-      const fallbackPhrases = this.questionsService.getPhrasesForExercises('A1', 10);
-      phrases.push(...fallbackPhrases.slice(0, 10 - phrases.length));
+    if (phrases.length < this.minimunExerciseAmount) {      
+      const fallbackPhrases = this.questionsService.getPhrasesForExercises('A1', this.minimunExerciseAmount);
+      phrases.push(...fallbackPhrases.slice(0, this.minimunExerciseAmount - phrases.length));
+      Logger.info("3.2 fallback if phrases.length < this.minimunExerciseAmount", phrases);
     }
 
     const exercises = this.exerciseFactory.generateExercises(phrases);
+    Logger.info("4. generateExercises=");
     await this.userProgressService.storeExercises(username, exercises);
+    Logger.info("5. storeExercises");
 
     // Mapeia removendo dados confidenciais de validação interna
     const publicExercises = exercises.map(
       ({ correctAnswer, instanceId, ...exercise }) => exercise
     );
+
+    Logger.info("6.  Mapeia removendo dados confidenciais de validação interna. publicExercises=", publicExercises);
     
     return publicExercises as PublicExercise[];
   }

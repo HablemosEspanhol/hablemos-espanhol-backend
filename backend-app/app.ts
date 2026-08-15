@@ -10,6 +10,7 @@ app.use(cookieParser());
 
 app.get('/', (req, res) => res.send("OK"));
 app.use('/api/exercises', DI.ExercisesController.getRouter());
+app.use('/api/exercises/v2', DI.ExercisesV2Controller.getRouter());
 app.use('/api/phrases', DI.PhraseController.getRouter());
 app.use('/api/chat', DI.ChatController.getRouter());
 app.use('/swagger', DI.SwaggerController.getRouter());

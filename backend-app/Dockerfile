@@ -31,6 +31,7 @@ RUN --mount=type=cache,target=/root/.npm \
 
 # Copia apenas os arquivos transpilados pelo tsc do primeiro estágio
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/1000-palavras.md ./1000-palavras.md
 
 # Segurança: Executa como usuário não-root
 USER node

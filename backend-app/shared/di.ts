@@ -6,6 +6,7 @@ import { ChatController } from "../modules/chat/chat.controller.js";
 import { ChatService } from "../modules/chat/chat.service.js";
 import { ExerciseRepository, IExerciseFactory } from "../modules/exercises/exercise.factory.js";
 import { ExercisesController } from "../modules/exercises/exercises.controller.js";
+import { ExercisesV2Controller } from "../modules/exercises/exercises-v2.controller.js";
 import { ExercisesService } from "../modules/exercises/exercises.service.js";
 import { UserProgressRepository } from "../modules/user/user-progress.repository.js";
 import { PhrasesController } from "../modules/phrases/phrases.controller.js";
@@ -31,6 +32,7 @@ const DI = {
     QuestionsService: questionsService,
     ChatController: new ChatController(chatService, userProgressService),
     ExercisesController: new ExercisesController(exercisesService),
+    ExercisesV2Controller: new ExercisesV2Controller(exercisesService),
     PhraseController: new PhrasesController(questionsService),
     SwaggerController: new SwaggerController()
 };
