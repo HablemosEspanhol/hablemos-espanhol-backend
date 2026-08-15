@@ -6,12 +6,9 @@ on:
     branches: [ main ]
 
 jobs:
-  # This workflow contains a single job called "build"
   Deploy:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     - name: Publish via SSH
       uses: appleboy/ssh-action@master
@@ -66,40 +63,44 @@ jobs:
           CONTAINER_NAME="hablemos-espanhol-backend-hablemos-espanhol-backend-1"
           
           MAX_ATTEMPTS=3
-          SLEEP_TIME=30 # 30 segundos entre tentativas
+          SLEEP_TIME=30
           OUTPUT=""
+          i=1
 
-          for ((i=1; i<=MAX_ATTEMPTS; i++)); do
+          while [ $i -le $MAX_ATTEMPTS ]; do
             echo "📋 Tentativa $i de $MAX_ATTEMPTS..."
             
-            # Coleta os últimos logs do container
             OUTPUT=$(docker logs --tail 100 "$CONTAINER_NAME" 2>&1 || true)
 
-            # Verifica se o OUTPUT NÃO está vazio
-            if [[ -n "${OUTPUT// /}" ]]; then
+            # Remove espaços e quebras de linha para checar se há conteúdo real
+            CLEAN_OUTPUT=$(echo "$OUTPUT" | tr -d '[:space:]')
+
+            if [ -n "$CLEAN_OUTPUT" ]; then
               echo "✅ Logs coletados com sucesso!"
               break
             fi
 
             echo "⚠️ Nenhum dado retornado nos logs."
             
-            if [[ $i -lt $MAX_ATTEMPTS ]]; then
+            if [ $i -lt $MAX_ATTEMPTS ]; then
               echo "⏳ Aguardando ${SLEEP_TIME}s antes da próxima tentativa..."
               sleep $SLEEP_TIME
             fi
+
+            i=$((i + 1))
           done
 
           echo "===== LOGS DO CONTAINER ====="
           echo "$OUTPUT"
           echo "============================="
 
-          # Se após 3 tentativas continuar sem logs
-          if [[ -z "${OUTPUT// /}" ]]; then
+          CLEAN_OUTPUT=$(echo "$OUTPUT" | tr -d '[:space:]')
+
+          if [ -z "$CLEAN_OUTPUT" ]; then
             echo "❌ ERRO: O container não gerou nenhum log após $MAX_ATTEMPTS tentativas."
             exit 1
           fi
 
-          # Valida ERROR apenas quando houver dados
           if echo "$OUTPUT" | grep -q "ERROR"; then
             echo "❌ Encontrado 'ERROR' nos logs do container!"
             exit 1
