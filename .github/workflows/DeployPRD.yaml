@@ -25,12 +25,13 @@ jobs:
             export MYSQL_DATABASE=hablemos_espanhol
             export MYSQL_USER='${{ secrets.DB_USER }}'
             export MYSQL_PASSWORD='${{ secrets.DB_PASSWORD }}'
-            export DB_PORT=3306
+            export DB_PORT='${{ secrets.DB_PORT }}'
             export DB_USER='${{ secrets.DB_USER }}'
             export DB_PASSWORD='${{ secrets.DB_PASSWORD }}'
             export DB_NAME=hablemos_espanhol
-            export PORT=3001
+            export PORT='${{ secrets.PORT }}'
             export REPO_FOLDER='${{ github.event.repository.name }}'
+            export GEMINI_API_KEY='${{ secrets.GEMINI_API_KEY }}'
 
             cd apps
 
@@ -52,25 +53,56 @@ jobs:
 
             echo ''
             echo 'Sucessfully Published!'
+            
     - name: Validando Container via SSH
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.PRIVATE_KEY }}
+        command_timeout: 10m
         script: |
-            echo "Validando se container está OK"
-            IMAGE_NAME=hablemos-espanhol-backend-hablemos-espanhol-backend-1
-            sleep 10
-            OUTPUT=$(docker logs $IMAGE_NAME 2>&1)
+          echo "🔍 Validando se o container está OK..."
+          CONTAINER_NAME="hablemos-espanhol-backend-hablemos-espanhol-backend-1"
+          
+          MAX_ATTEMPTS=3
+          SLEEP_TIME=30 # 30 segundos entre tentativas
+          OUTPUT=""
 
-            echo "===== OUTPUT ====="
-            echo "$OUTPUT"
-            echo "=================="
+          for ((i=1; i<=MAX_ATTEMPTS; i++)); do
+            echo "📋 Tentativa $i de $MAX_ATTEMPTS..."
+            
+            # Coleta os últimos logs do container
+            OUTPUT=$(docker logs --tail 100 "$CONTAINER_NAME" 2>&1 || true)
 
-            if [[ "$OUTPUT" == *"ERROR"* ]]; then
-                echo "❌ Encontrado ERROR no output"
-                exit 1
-            else
-                echo "✅ Nenhum erro encontrado"
+            # Verifica se o OUTPUT NÃO está vazio
+            if [[ -n "${OUTPUT// /}" ]]; then
+              echo "✅ Logs coletados com sucesso!"
+              break
             fi
+
+            echo "⚠️ Nenhum dado retornado nos logs."
+            
+            if [[ $i -lt $MAX_ATTEMPTS ]]; then
+              echo "⏳ Aguardando ${SLEEP_TIME}s antes da próxima tentativa..."
+              sleep $SLEEP_TIME
+            fi
+          done
+
+          echo "===== LOGS DO CONTAINER ====="
+          echo "$OUTPUT"
+          echo "============================="
+
+          # Se após 3 tentativas continuar sem logs
+          if [[ -z "${OUTPUT// /}" ]]; then
+            echo "❌ ERRO: O container não gerou nenhum log após $MAX_ATTEMPTS tentativas."
+            exit 1
+          fi
+
+          # Valida ERROR apenas quando houver dados
+          if echo "$OUTPUT" | grep -q "ERROR"; then
+            echo "❌ Encontrado 'ERROR' nos logs do container!"
+            exit 1
+          else
+            echo "✅ Nenhum 'ERROR' encontrado nos logs."
+          fi
