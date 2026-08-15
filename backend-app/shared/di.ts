@@ -4,7 +4,7 @@ import { IUserProgressRepository } from "../modules/user/iuser-progress.reposito
 import { LLMProvider } from "./llm/llm-provider.interface.js";
 import { ChatController } from "../modules/chat/chat.controller.js";
 import { ChatService } from "../modules/chat/chat.service.js";
-import { ExerciseRepository, IExerciseRepository } from "../modules/exercises/exercise.repository.js";
+import { ExerciseRepository, IExerciseFactory } from "../modules/exercises/exercise.factory.js";
 import { ExercisesController } from "../modules/exercises/exercises.controller.js";
 import { ExercisesService } from "../modules/exercises/exercises.service.js";
 import { UserProgressRepository } from "../modules/user/user-progress.repository.js";
@@ -19,7 +19,7 @@ import { GeminiLLMProvider } from "./llm/gemini.provider.js";
 const llmProvider: LLMProvider = new GeminiLLMProvider();
 const questionsRepository: IQuestionsRepository = new QuestionsRepository();
 const userProgressRepository: IUserProgressRepository = new UserProgressRepository();
-const exercisesRepository: IExerciseRepository = new ExerciseRepository();
+const exercisesRepository: IExerciseFactory = new ExerciseRepository();
 const questionsService = new QuestionsService(questionsRepository, llmProvider);
 const chatService = new ChatService(llmProvider);
 const userProgressService = new UserProgressService(new UserProgressRepository());
@@ -27,7 +27,7 @@ const exercisesService = new ExercisesService(exercisesRepository, userProgressR
 
 const DI = {
     QuestionsRepository: questionsRepository,
-    LocalOllama: llmProvider,
+    LLMProvider: llmProvider,
     QuestionsService: questionsService,
     ChatController: new ChatController(chatService, userProgressService),
     ExercisesController: new ExercisesController(exercisesService),

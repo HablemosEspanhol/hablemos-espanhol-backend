@@ -19,7 +19,7 @@ async function pollingQuestions() {
         Logger.info("Lendo dados previamente salvos");
         await DI.QuestionsRepository.loadDataFromDisc();
 
-        var llmProvider = DI.LocalOllama;
+        var llmProvider = DI.LLMProvider;
 
         if(await llmProvider.checkModels(llmProvider.model, isMock)) {
             DI.QuestionsService.pollingQuestions();

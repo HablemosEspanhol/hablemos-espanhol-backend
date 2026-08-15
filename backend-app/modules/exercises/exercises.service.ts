@@ -2,7 +2,7 @@ import { QuestionsService } from "./question.service.js";
 import { ExercisePhraseInput, GeneratedExercise, PublicExercise, SubmitValidationResult } from "./exercises.types.js";
 import { SubmitAnswerInput, CheckAnswerResult } from "../user/user-progress.types.js";
 import { IUserProgressRepository } from "../user/iuser-progress.repository.js";
-import { IExerciseRepository } from "./exercise.repository.js";
+import { IExerciseFactory } from "./exercise.factory.js";
 import { UserProgressService } from "../user/user-progress.service.js";
 
 export interface CustomHttpError {
@@ -12,12 +12,25 @@ export interface CustomHttpError {
 
 // --- Classe do Serviço ---
 export class ExercisesService {
+  
   constructor(
-    private readonly exerciseRepository: IExerciseRepository,
+    private readonly exerciseFactory: IExerciseFactory,
     private readonly userProgressRepository: IUserProgressRepository,
     private readonly userProgressService: UserProgressService,
     private readonly questionsService: QuestionsService
   ) {}
+
+  public async getExercisesByUsernameUsingAI(username: string): Promise<PublicExercise[]> {
+    const userLevel = await this.userProgressRepository.getUserLevel(username);
+    //1. pedir ao questionsService para retornar 10 questões:
+    //  dentro do método ele deverá buscar 5 palavras da lista de palavras
+    //  criar um prompt que crie duas frases para cada palavra
+    //  retornar como ExercisePhrase[]
+
+    // 2. gerar exercicios com a exerciseFactory
+    // 3. armazenar esses exercicios this.userProgressService.storeExercises(username, exercises)
+    // 4. retornar ao chamador uma lista de PublicExercise[]
+  }
 
   /**
    * Obtém e gera o conjunto de exercícios customizado baseado no nível e histórico do aluno.
@@ -33,7 +46,7 @@ export class ExercisesService {
       phrases.push(...fallbackPhrases.slice(0, 10 - phrases.length));
     }
 
-    const exercises = this.exerciseRepository.generateExercises(phrases);
+    const exercises = this.exerciseFactory.generateExercises(phrases);
     await this.userProgressService.storeExercises(username, exercises);
 
     // Mapeia removendo dados confidenciais de validação interna

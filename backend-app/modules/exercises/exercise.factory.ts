@@ -1,28 +1,15 @@
 import crypto from 'crypto';
+import { ExercisePhraseInput, GeneratedExercise } from './exercises.types.js';
 
 // --- Interfaces de Tipagem ---
-export interface ExercisePhraseInput {
-  palavra: string;
-  texto: string;
-  traduccion: string;
-}
 
-export interface GeneratedExercise {
-  id: string;
-  instanceId: string;
-  type: 'translation' | 'fill_blank' | 'multiple_choice';
-  question: string;
-  options?: (string | null)[] | null;
-  correctAnswer: string;
-  palavra: string;
-}
 
-export interface IExerciseRepository {
+export interface IExerciseFactory {
   generateExercises(phrases: ExercisePhraseInput[]): GeneratedExercise[];
 }
 
 // --- Classe do Repositório ---
-export class ExerciseRepository implements IExerciseRepository {
+export class ExerciseRepository implements IExerciseFactory {
   constructor() {}
 
   /**
