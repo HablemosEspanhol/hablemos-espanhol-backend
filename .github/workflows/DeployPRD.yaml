@@ -52,7 +52,7 @@ jobs:
             echo 'Sucessfully Published!'
             
     - name: Validando Container via SSH
-      uses: appleboy/ssh-action@v1.0.0
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
