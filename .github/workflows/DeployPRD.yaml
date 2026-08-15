@@ -29,6 +29,7 @@ jobs:
             export PORT='${{ secrets.PORT }}'
             export REPO_FOLDER='${{ github.event.repository.name }}'
             export GEMINI_API_KEY='${{ secrets.GEMINI_API_KEY }}'
+            export AUTH_API_URL='${{ secrets.AUTH_API_URL }}'
 
             cd apps
 

@@ -2,6 +2,7 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import Logger from './shared/Logger.js';
 import DI from './shared/di.js';
+import { createAuthMiddleware } from './shared/auth.middleware.js';
 
 const app = express();
 app.use(express.json());
@@ -9,9 +10,11 @@ app.use(cookieParser());
 
 
 app.get('/', (req, res) => res.send("OK"));
-app.use('/api/exercises', DI.ExercisesController.getRouter());
-app.use('/api/exercises/v2', DI.ExercisesV2Controller.getRouter());
+const authMiddleware = createAuthMiddleware(DI.AuthService);
+app.use('/api/exercises', authMiddleware, DI.ExercisesController.getRouter());
+app.use('/api/exercises/v2', authMiddleware, DI.ExercisesV2Controller.getRouter());
 app.use('/api/phrases', DI.PhraseController.getRouter());
+app.use('/api', DI.AuthController.getRouter());
 app.use('/api/chat', DI.ChatController.getRouter());
 app.use('/swagger', DI.SwaggerController.getRouter());
 

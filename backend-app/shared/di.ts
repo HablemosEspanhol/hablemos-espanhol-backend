@@ -15,6 +15,9 @@ import { LocalOllama } from "./llm/ollama.provider.js";
 import { QuestionsRepository } from "../modules/exercises/questions.repository.js";
 import { UserProgressService } from "../modules/user/user-progress.service.js";
 import { GeminiLLMProvider } from "./llm/gemini.provider.js";
+import { AuthRepository } from "../modules/auth/auth.repository.js";
+import { AuthService } from "../modules/auth/auth.service.js";
+import { AuthController } from "../modules/auth/auth.controller.js";
 
 // const llmProvider: LLMProvider = new LocalOllama();
 const llmProvider: LLMProvider = new GeminiLLMProvider();
@@ -25,15 +28,19 @@ const questionsService = new QuestionsService(questionsRepository, llmProvider);
 const chatService = new ChatService(llmProvider);
 const userProgressService = new UserProgressService(new UserProgressRepository());
 const exercisesService = new ExercisesService(exercisesRepository, userProgressRepository, userProgressService, questionsService);
+const authRepository = new AuthRepository();
+const authService = new AuthService(authRepository);
 
 const DI = {
     QuestionsRepository: questionsRepository,
     LLMProvider: llmProvider,
     QuestionsService: questionsService,
+    AuthService: authService,
     ChatController: new ChatController(chatService, userProgressService),
     ExercisesController: new ExercisesController(exercisesService),
     ExercisesV2Controller: new ExercisesV2Controller(exercisesService),
     PhraseController: new PhrasesController(questionsService),
+    AuthController: new AuthController(authService),
     SwaggerController: new SwaggerController()
 };
 
