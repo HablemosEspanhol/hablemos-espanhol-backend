@@ -1,13 +1,14 @@
-import { RowDataPacket, ResultSetHeader, PoolConnection } from "mysql2/promise";
+import { RowDataPacket, PoolConnection } from "mysql2/promise";
 import databasePool from "../../shared/config/database.config.js";
 import { UserProgress, ExerciseStoreInput, DbExerciseMapItem, DbRawPhraseProgress, ExerciseMapRow, PhraseProgressRow, PhraseRow, UserProgressRow } from "./user-progress.types.js";
 import { IUserProgressRepository } from "./iuser-progress.repository.js";
+import { IUserRepository } from "../../shared/user.repository.js";
 
 
 export class UserProgressRepository implements IUserProgressRepository {
   private readonly defaultLevel = 'A1';
 
-  constructor() {}
+  constructor(private readonly usersRepository: IUserRepository) {}
 
   private mapProgressRow(row: any): UserProgress {
     return {
@@ -21,38 +22,36 @@ export class UserProgressRepository implements IUserProgressRepository {
   }
 
   public async getOrCreateUser(username: string): Promise<UserProgress> {
-    const [rows] = await databasePool.query<UserProgressRow[]>(
-      `SELECT u.id, u.username, up.current_level, up.total_correct, up.total_incorrect, up.last_activity 
-       FROM users u 
-       JOIN user_progress up ON u.id = up.user_id 
-       WHERE u.username = ?`,
-      [username]
-    );
-
-    if (rows[0]) {
-      return this.mapProgressRow(rows[0]);
-    }
-
     const connection = await databasePool.getConnection();
     try {
       await connection.beginTransaction();
-      
-      const [userResult] = await connection.query<ResultSetHeader>(
-        'INSERT INTO users (username) VALUES (?)',
-        [username]
-      );
-      const userId = userResult.insertId;
+      const user = await this.usersRepository.getOrCreateUser(username);
+      const userId = user.id;
 
       await connection.query(
-        'INSERT INTO user_progress (user_id, current_level, total_correct, total_incorrect, last_activity) VALUES (?, ?, 0, 0, NOW())',
+        `INSERT INTO user_progress (user_id, current_level, total_correct, total_incorrect, last_activity)
+         VALUES (?, ?, 0, 0, NOW())
+         ON DUPLICATE KEY UPDATE user_id = user_id`,
         [userId, this.defaultLevel]
       );
 
+      const [rows] = await connection.query<UserProgressRow[]>(
+        `SELECT u.id, u.username, up.current_level, up.total_correct, up.total_incorrect, up.last_activity 
+         FROM users u 
+         JOIN user_progress up ON u.id = up.user_id 
+         WHERE u.username = ?`,
+        [username]
+      );
+
       await connection.commit();
-      
+
+      if (rows[0]) {
+        return this.mapProgressRow(rows[0]);
+      }
+
       return {
-        id: userId,
-        username,
+        id: user.id,
+        username: user.username,
         nivelAtual: this.defaultLevel,
         totalAcertos: 0,
         totalErros: 0,

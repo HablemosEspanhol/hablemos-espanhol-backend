@@ -15,25 +15,32 @@ import { LocalOllama } from "./llm/ollama.provider.js";
 import { QuestionsRepository } from "../modules/exercises/questions.repository.js";
 import { UserProgressService } from "../modules/user/user-progress.service.js";
 import { GeminiLLMProvider } from "./llm/gemini.provider.js";
+import { AuthService } from "../modules/auth/auth.service.js";
+import { AuthController } from "../modules/auth/auth.controller.js";
+import { UserRepository } from "./user.repository.js";
 
 // const llmProvider: LLMProvider = new LocalOllama();
 const llmProvider: LLMProvider = new GeminiLLMProvider();
 const questionsRepository: IQuestionsRepository = new QuestionsRepository();
-const userProgressRepository: IUserProgressRepository = new UserProgressRepository();
+const usersRepository = new UserRepository();
+const userProgressRepository: IUserProgressRepository = new UserProgressRepository(usersRepository);
 const exercisesRepository: IExerciseFactory = new ExerciseRepository();
 const questionsService = new QuestionsService(questionsRepository, llmProvider);
 const chatService = new ChatService(llmProvider);
-const userProgressService = new UserProgressService(new UserProgressRepository());
+const userProgressService = new UserProgressService(userProgressRepository);
 const exercisesService = new ExercisesService(exercisesRepository, userProgressRepository, userProgressService, questionsService);
+const authService = new AuthService(usersRepository);
 
 const DI = {
     QuestionsRepository: questionsRepository,
     LLMProvider: llmProvider,
     QuestionsService: questionsService,
+    AuthService: authService,
     ChatController: new ChatController(chatService, userProgressService),
     ExercisesController: new ExercisesController(exercisesService),
     ExercisesV2Controller: new ExercisesV2Controller(exercisesService),
     PhraseController: new PhrasesController(questionsService),
+    AuthController: new AuthController(authService),
     SwaggerController: new SwaggerController()
 };
 
