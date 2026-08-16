@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-import { IAuthRepository } from './iauth.repository.js';
 import { User, LoginPayload, AuthResponse, TokenPayload } from './auth.types.js';
 import Logger from '../../shared/Logger.js';
+import { IUserRepository } from '../../shared/user.repository.js';
 
 export class AuthService {
   private readonly JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -9,7 +9,7 @@ export class AuthService {
   private readonly JWT_EXPIRATION_SECONDS = this.JWT_EXPIRATION_DAYS * 24 * 60 * 60;
   private readonly tokenCache = new Map<string, string>();
 
-  constructor(private readonly repository: IAuthRepository) {}
+  constructor(private readonly repository: IUserRepository) {}
 
   private base64UrlEncode(value: string | Buffer): string {
     return Buffer.from(value)

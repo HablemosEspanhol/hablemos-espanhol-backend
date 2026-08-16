@@ -1,7 +1,19 @@
 import { ResultSetHeader, RowDataPacket } from 'mysql2/promise';
-import databasePool from '../../shared/config/database.config.js';
-import { User } from './auth.types.js';
-import { IAuthRepository } from './iauth.repository.js';
+import databasePool from './config/database.config.js';
+
+export interface UserRecord {
+  id: number;
+  username: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export interface IUserRepository {
+  getUserByUsername(username: string): Promise<UserRecord | null>;
+  getUserById(userId: number): Promise<UserRecord | null>;
+  createUser(username: string): Promise<UserRecord>;
+  getOrCreateUser(username: string): Promise<UserRecord>;
+}
 
 interface UserRow extends RowDataPacket {
   id: number;
@@ -10,8 +22,8 @@ interface UserRow extends RowDataPacket {
   updated_at: Date;
 }
 
-export class AuthRepository implements IAuthRepository {
-  private mapUserRow(row: UserRow): User {
+export class UserRepository implements IUserRepository {
+  private mapUserRow(row: UserRow): UserRecord {
     return {
       id: row.id,
       username: row.username,
@@ -20,7 +32,7 @@ export class AuthRepository implements IAuthRepository {
     };
   }
 
-  public async getUserByUsername(username: string): Promise<User | null> {
+  public async getUserByUsername(username: string): Promise<UserRecord | null> {
     const [rows] = await databasePool.query<UserRow[]>(
       'SELECT id, username, created_at, updated_at FROM users WHERE username = ?',
       [username]
@@ -29,7 +41,16 @@ export class AuthRepository implements IAuthRepository {
     return rows.length > 0 ? this.mapUserRow(rows[0]) : null;
   }
 
-  public async createUser(username: string): Promise<User> {
+  public async getUserById(userId: number): Promise<UserRecord | null> {
+    const [rows] = await databasePool.query<UserRow[]>(
+      'SELECT id, username, created_at, updated_at FROM users WHERE id = ?',
+      [userId]
+    );
+
+    return rows.length > 0 ? this.mapUserRow(rows[0]) : null;
+  }
+
+  public async createUser(username: string): Promise<UserRecord> {
     const connection = await databasePool.getConnection();
 
     try {
@@ -60,12 +81,8 @@ export class AuthRepository implements IAuthRepository {
     }
   }
 
-  public async getUserById(userId: number): Promise<User | null> {
-    const [rows] = await databasePool.query<UserRow[]>(
-      'SELECT id, username, created_at, updated_at FROM users WHERE id = ?',
-      [userId]
-    );
-
-    return rows.length > 0 ? this.mapUserRow(rows[0]) : null;
+  public async getOrCreateUser(username: string): Promise<UserRecord> {
+    const existing = await this.getUserByUsername(username);
+    return existing ?? this.createUser(username);
   }
 }
