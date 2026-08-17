@@ -27,12 +27,7 @@ export class ExercisesController extends BaseController{
    */
   private async getExercises(req: Request, res: Response): Promise<void> {
     try {
-      const username = req.query.username as string | undefined;
-      
-      if (!username) {
-        res.status(400).json({ error: 'Username is required' });
-        return;
-      }
+      const username = req.headers['x-auth-username'] as string;
 
       const exercises: PublicExercise[] = await this.exercisesService.getExercisesByUsername(username);
       res.json(exercises);
@@ -69,7 +64,8 @@ export class ExercisesController extends BaseController{
    */
   private async checkExercise(req: Request, res: Response): Promise<void> {
     try {
-      const { username, answer } = req.body as { username?: string; answer?: SubmitAnswerInput };
+      const username = req.headers['x-auth-username'] as string;
+      const { answer } = req.body as { username?: string; answer?: SubmitAnswerInput };
 
       const result: CheckAnswerResult = await this.exercisesService.checkOneExercise(
         username!, 
