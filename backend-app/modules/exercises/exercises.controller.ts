@@ -42,11 +42,12 @@ export class ExercisesController extends BaseController{
    */
   private async submitExercises(req: Request, res: Response): Promise<void> {
     try {
-      Logger.info(req.body);
-      const { username, answers } = req.body as { username?: string; answers?: SubmitAnswerInput[] };
+      
+      const username = req.headers['x-auth-username'] as string;
+      const { answers } = req.body as { answers?: SubmitAnswerInput[] };
 
       const response: SubmitValidationResult = await this.exercisesService.validateExercise(
-        username!,
+        username,
         answers!
       );
       
