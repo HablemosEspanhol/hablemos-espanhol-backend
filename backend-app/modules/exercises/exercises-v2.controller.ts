@@ -17,7 +17,7 @@ export class ExercisesV2Controller extends BaseController {
 
     private async getExercisesV2(req: Request, res: Response) : Promise<void>{
         try {
-            const username = req.query.username as string | undefined;
+            const username = req.headers['x-auth-username'] as string;
 
             if (!username) {
                 res.status(400).json({ error: 'Username is required' });
