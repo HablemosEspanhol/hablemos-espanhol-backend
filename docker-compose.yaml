@@ -42,6 +42,7 @@ services:
       GEMINI_API_KEY: ${GEMINI_API_KEY}
       ENABLE_POLL_QUESTIONS: ${ENABLE_POLL_QUESTIONS:-false}
       AUTH_API_URL: ${AUTH_API_URL}
+      JWT_SECRET: ${JWT_SECRET}
     volumes:
       - app_data:/app/data
 
