@@ -9,10 +9,13 @@ app.use(express.json());
 app.use(cookieParser());
 
 
-app.get('/', (req, res) => res.send("OK"));
+app.get('/', (_, res) => res.send("OK"));
 const authMiddleware = createAuthMiddleware(DI.AuthService);
 app.use('/api/exercises', authMiddleware, DI.ExercisesController.getRouter());
 app.use('/api/exercises/v2', authMiddleware, DI.ExercisesV2Controller.getRouter());
+app.use('/api/exercises/v2/submit', authMiddleware, DI.ExercisesV2SubmitController.getRouter());
+app.use('/api/exercises/v3', authMiddleware, DI.ExercisesV3Controller.getRouter());
+app.use('/api/progress', authMiddleware, DI.ProgressController.getRouter());
 app.use('/api/phrases', DI.PhraseController.getRouter());
 app.use('/api', DI.AuthController.getRouter());
 app.use('/api/chat', DI.ChatController.getRouter());

@@ -65,3 +65,53 @@ CREATE TABLE IF NOT EXISTS `user_phrase_progress` (
   KEY `idx_user_id` (`user_id`),
   CONSTRAINT `fk_user_phrase_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- =========================================================
+-- 1. CRIAÇÃO DAS TABELAS
+-- =========================================================
+
+-- Tabela para os Níveis de Proficiência (ProficienceLevel)
+CREATE TABLE IF NOT EXISTS proficiency_levels (
+    level VARCHAR(10) PRIMARY KEY,
+    focus TEXT NOT NULL
+);
+
+-- Tabela para as Lições (Lesson)
+CREATE TABLE IF NOT EXISTS lessons (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    lesson_number INT NOT NULL UNIQUE,
+    title VARCHAR(150) NOT NULL,
+    goal TEXT NOT NULL,
+    level VARCHAR(10) NOT NULL,
+    CONSTRAINT fk_lessons_proficiency FOREIGN KEY (level) REFERENCES proficiency_levels(level)
+);
+
+-- Tabela para os Exemplos das Lições (examples: string[])
+CREATE TABLE IF NOT EXISTS lesson_examples (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    lesson_id INT NOT NULL,
+    example TEXT NOT NULL,
+    CONSTRAINT fk_examples_lesson FOREIGN KEY (lesson_id) REFERENCES lessons(id) ON DELETE CASCADE
+);
+-- Tabela de relacionamento entre usuário e lições
+CREATE TABLE IF NOT EXISTS `lessons_user_progress` (
+    `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `lesson_id` INT NOT NULL,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `completed_date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `uk_user_lesson` (`user_id`, `lesson_id`),
+    CONSTRAINT `fk_progress_lesson` FOREIGN KEY (`lesson_id`) REFERENCES `lessons` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_progress_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `exercise_v3_bank` (
+    `id` VARCHAR(64) NOT NULL,
+    `palavra` VARCHAR(255) NOT NULL,
+    `texto` TEXT NOT NULL,
+    `traduccion` TEXT NOT NULL,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_exercise_v3_bank_palavra` (`palavra`(191))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

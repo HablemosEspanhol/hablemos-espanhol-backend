@@ -3,25 +3,35 @@ services:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:?MYSQL_DATABASE is required}
+      MYSQL_USER: ${MYSQL_USER:?MYSQL_USER is required}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
     volumes:
       - mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u ${MYSQL_USER} -p${MYSQL_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 180s
 
-  # ollama:
-  #   image: ollama/ollama
-  #   volumes:
-  #     - ollama:/root/.ollama
-  #   entrypoint: ["/bin/sh", "-c"]
-  #   command: >
-  #     "ollama serve &
-  #      sleep 5 &&
-  #      ollama pull phi3 &&
-  #      wait"
+  db-bootstrap:
+    build:
+      context: .
+      dockerfile: db-bootstrap.Dockerfile
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      DB_HOST: mysql
+      DB_PORT: ${DB_PORT:?DB_PORT is required}
+      DB_USER: ${DB_USER:?DB_USER is required}
+      DB_NAME: ${DB_NAME:?DB_NAME is required}
+    restart: "no"
 
   hablemos-espanhol-backend:
     build: ./backend-app
@@ -30,16 +40,18 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
-      - mysql
-      # - ollama
+      mysql:
+        condition: service_healthy
+      db-bootstrap:
+        condition: service_completed_successfully
     environment:
       DB_HOST: mysql
-      DB_PORT: ${DB_PORT}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      PORT: ${PORT}
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      DB_PORT: ${DB_PORT:?DB_PORT is required}
+      DB_USER: ${DB_USER:?DB_USER is required}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      DB_NAME: ${DB_NAME:?DB_NAME is required}
+      PORT: ${PORT:?PORT is required}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?GEMINI_API_KEY is required}
       ENABLE_POLL_QUESTIONS: ${ENABLE_POLL_QUESTIONS:-false}
       AUTH_API_URL: ${AUTH_API_URL}
       JWT_SECRET: ${JWT_SECRET}
