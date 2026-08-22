@@ -55,6 +55,7 @@ services:
       ENABLE_POLL_QUESTIONS: ${ENABLE_POLL_QUESTIONS:-false}
       AUTH_API_URL: ${AUTH_API_URL}
       JWT_SECRET: ${JWT_SECRET}
+      LLM_PROVIDER: ${LLM_PROVIDER:-gemini}
     volumes:
       - app_data:/app/data
 
