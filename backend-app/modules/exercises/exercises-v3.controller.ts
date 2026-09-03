@@ -1,26 +1,39 @@
-import { Request, Response, Router } from "express";
-import { BaseController } from "../../shared/base.controller.js";
+import { Controller, Get, Header, Response, Route, Security, SuccessResponse, Tags, Request } from "tsoa";
+import { Request as ExpressRequest } from 'express';
 import Logger from "../../shared/Logger.js";
 import { ExercisesService } from "./exercises.service.js";
+import { PublicExercise } from "./exercises.types.js";
+import DI from "../../shared/di.js";
 
-export class ExercisesV3Controller extends BaseController {
-  constructor(private readonly exercisesService: ExercisesService) {
+@Tags("Exercises V3")
+@Route("api/exercises/v3")
+@Security("jwt")
+export class ExercisesV3Controller extends Controller {
+  constructor(
+    private readonly exercisesService: ExercisesService = DI.ExercisesService
+  ) {
     super();
   }
 
-  protected initializeRoutes(router: Router): void {
-    router.get("/", this.getExercisesV3.bind(this));
-  }
+  /**
+   * Obtém os exercícios no formato V3 para o usuário informado no cabeçalho.
+   * 
+   * @param username Nome do usuário vindo do header x-auth-username
+   */
+  @Get()
+  @SuccessResponse("200", "Exercícios V3 obtidos com sucesso")
+  @Response("500", "Erro interno do servidor")
+  public async getExercisesV3(
+    @Request() request: ExpressRequest
+  ): Promise<PublicExercise[]> {
 
-  private async getExercisesV3(req: Request, res: Response): Promise<void> {
     try {
-      const username = req.headers['x-auth-username'] as string;
-
-      const exercises = await this.exercisesService.getExercisesV3(username);
-      res.json(exercises);
+      const { username } = request.user!;
+      return await this.exercisesService.getExercisesV3(username);
     } catch (error: any) {
       Logger.error("Error generating exercises v3:", error);
-      res.status(500).json({ error: "Internal server error" });
+      this.setStatus(500);
+      throw new Error("Internal server error");
     }
   }
 }

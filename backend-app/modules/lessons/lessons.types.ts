@@ -54,3 +54,7 @@ export interface ProficiencyLevelRow extends RowDataPacket {
   level: string;
   focus: string;
 }
+
+export interface CompleteLessonResponse{
+  message: string
+}

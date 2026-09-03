@@ -1,33 +1,51 @@
-import { Request, Response, Router } from "express";
-import { BaseController } from "../../shared/base.controller.js";
+import { Body, Controller, Header, Post, Response, Route, Security, SuccessResponse, Tags, Request } from "tsoa";
+import { Request as ExpressRequest } from 'express';
 import Logger from "../../shared/Logger.js";
 import { LessonsService } from "../lessons/lessons.service.js";
+import DI from "../../shared/di.js";
+import { SubmitLessonPayload } from "./exercises.types.js";
+import { CompleteLessonResponse } from "../lessons/lessons.types.js";
 
-export class ExercisesV2SubmitController extends BaseController {
-  constructor(private readonly lessonsService: LessonsService) {
+@Tags("Exercises V2")
+@Route("api/exercises/v2/submit")
+@Security("jwt")
+export class ExercisesV2SubmitController extends Controller {
+  constructor(
+    private readonly lessonsService: LessonsService = DI.LessonsService
+  ) {
     super();
   }
 
-  protected initializeRoutes(router: Router): void {
-    router.post("/", this.submitLesson.bind(this));
-  }
+  /**
+   * Envia a submissão de conclusão de uma lição.
+   * 
+   * @param username Usuário vindo do cabeçalho 'x-auth-username'
+   * @param requestBody Objeto contendo o número da lição 'lessonNumber'
+   */
+  @Post()
+  @SuccessResponse("200", "Lição concluída com sucesso")
+  @Response("400", "lessonNumber é obrigatório e deve ser um número")
+  @Response("500", "Erro interno do servidor")
+  public async submitLesson(
+    @Body() requestBody: SubmitLessonPayload,
+    @Request() request: ExpressRequest
+  ): Promise<CompleteLessonResponse> {
+    const { username } = request.user!;
+    const { lessonNumber } = requestBody;
 
-  private async submitLesson(req: Request, res: Response): Promise<void> {
+    if (typeof lessonNumber !== "number") {
+      this.setStatus(400);
+      throw new Error("LessonNumber is required and must be a number");
+    }
+
     try {
-      const username = req.headers['x-auth-username'] as string;
-      const { lessonNumber } = req.body as { lessonNumber?: number };
-      if (typeof lessonNumber !== "number") {
-        res.status(400).json({ error: "LessonNumber are required" });
-        return;
-      }
-
-      const result = await this.lessonsService.completeLesson(username, lessonNumber);
-      res.json(result);
+      return await this.lessonsService.completeLesson(username, lessonNumber);
     } catch (error: any) {
       Logger.error("Error submitting lesson progress:", error);
       const status = error.status || 500;
       const message = error.error || "Internal server error";
-      res.status(status).json({ error: message });
+      this.setStatus(status);
+      throw new Error(message);
     }
   }
 }

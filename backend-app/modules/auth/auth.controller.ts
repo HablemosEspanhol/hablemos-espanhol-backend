@@ -1,47 +1,50 @@
-import { Request, Response, Router } from 'express';
-import { BaseController } from '../../shared/base.controller.js';
+import { Controller, Post, Body, Route, Response, SuccessResponse, Tags } from 'tsoa';
 import { AuthService } from './auth.service.js';
-import { LoginPayload } from './auth.types.js';
+import { LoginPayload, AuthResponse } from './auth.types.js';
+import DI from '../../shared/di.js';
 
-export class AuthController extends BaseController {
-  constructor(private readonly authService: AuthService) {
+@Tags("Auth")
+@Route("api/auth")
+export class AuthController extends Controller {
+  constructor(private readonly authService: AuthService = DI.AuthService) {
     super();
   }
 
-  protected initializeRoutes(router: Router): void {
-    router.post('/auth', (req: Request, res: Response) => this.login(req, res));
-  }
+  /**
+   * Autentica o usuário e retorna o token de acesso.
+   */
+  @Post()
+  @SuccessResponse("200", "Autenticado com sucesso")
+  @Response("400", "Credenciais ausentes ou inválidas")
+  @Response("401", "Credenciais incorretas")
+  @Response("502", "Erro de comunicação com o serviço de autenticação")
+  public async login(
+    @Body() requestBody: LoginPayload
+  ): Promise<AuthResponse> {
+    const { username, password } = requestBody;
 
-  private async login(req: Request, res: Response): Promise<void> {
+    if (!username || !password) {
+      this.setStatus(400);
+      throw new Error('Username and password are required');
+    }
+
     try {
-      const { username, password } = req.body as LoginPayload;
-
-      if (typeof username !== 'string' || typeof password !== 'string' || !username || !password) {
-        res.status(400).json({ error: 'Username and password are required' });
-        return;
-      }
-
-      const authResponse = await this.authService.authenticate({ username, password });
-      res.status(200).json(authResponse);
+      return await this.authService.authenticate({ username, password });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Authentication failed';
 
       if (message === 'Invalid credentials') {
-        res.status(401).json({ error: message });
-        return;
-      }
-
-      if (message.includes('required')) {
-        res.status(400).json({ error: message });
-        return;
+        this.setStatus(401);
+        throw new Error(message);
       }
 
       if (message === 'Failed to validate credentials') {
-        res.status(502).json({ error: message });
-        return;
+        this.setStatus(502);
+        throw new Error(message);
       }
 
-      res.status(500).json({ error: 'Internal server error' });
+      this.setStatus(500);
+      throw new Error('Internal server error');
     }
   }
 }

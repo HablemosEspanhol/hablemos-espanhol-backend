@@ -1,5 +1,5 @@
 import { LessonsRepository } from "./lessons.repository.js";
-import { ProgressSummary } from "./lessons.types.js";
+import { CompleteLessonResponse, ProgressSummary } from "./lessons.types.js";
 import { UserProgressService } from "../user/user-progress.service.js";
 import { IUserProgressRepository } from "../user/iuser-progress.repository.js";
 
@@ -42,7 +42,7 @@ export class LessonsService {
     };
   }
 
-  public async completeLesson(username: string, lessonNumber: number): Promise<{ message: string }> {
+  public async completeLesson(username: string, lessonNumber: number): Promise<CompleteLessonResponse> {
     const user = await this.userProgressService.getOrCreateUser(username);
     const lessons = await this.repository.listLessons();
     const lesson = lessons.find(l => l.lessonNumber === lessonNumber);

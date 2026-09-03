@@ -2,24 +2,17 @@ import express from 'express';
 import cookieParser from 'cookie-parser';
 import Logger from './shared/Logger.js';
 import DI from './shared/di.js';
-import { createAuthMiddleware } from './shared/auth.middleware.js';
+import { RegisterRoutes } from "./build/routes.js";
+import { setupSwagger } from './shared/swagger.middleware.js';
 
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+RegisterRoutes(app);
 
 
 app.get('/', (_, res) => res.send("OK"));
-const authMiddleware = createAuthMiddleware(DI.AuthService);
-app.use('/api/exercises', authMiddleware, DI.ExercisesController.getRouter());
-app.use('/api/exercises/v2', authMiddleware, DI.ExercisesV2Controller.getRouter());
-app.use('/api/exercises/v2/submit', authMiddleware, DI.ExercisesV2SubmitController.getRouter());
-app.use('/api/exercises/v3', authMiddleware, DI.ExercisesV3Controller.getRouter());
-app.use('/api/progress', authMiddleware, DI.ProgressController.getRouter());
-app.use('/api/phrases', DI.PhraseController.getRouter());
-app.use('/api', DI.AuthController.getRouter());
-app.use('/api/chat', DI.ChatController.getRouter());
-app.use('/swagger', DI.SwaggerController.getRouter());
+setupSwagger(app, '/swagger');
 
 app.use((err: any, req: any, res: any, next: any) => {
     Logger.error(err);
@@ -31,6 +24,8 @@ app.use((err: any, req: any, res: any, next: any) => {
         message: mensagem,
     });
 });
+
+
 
 process.on('unhandledRejection', (reason, promise) => { 
     Logger.error('⚠️ [GlobalExceptionHandler][unhandledRejection] Rejeição não tratada em: '+ promise + ' razão: '+ reason);

@@ -1,3 +1,5 @@
+import { SubmitAnswerInput } from "../user/user-progress.types.js";
+
 // --- Interfaces adicionais do escopo de Exercises ---
 export interface ExercisePhraseInput {
   palavra: string;
@@ -34,4 +36,16 @@ export interface SubmitValidationResult {
   accuracy: number;
   newLevel: string;
   message: string;
+}
+
+export interface SubmitExercisesPayload {
+  answers: SubmitAnswerInput[];
+}
+
+export interface CheckExercisePayload {
+  answer: SubmitAnswerInput;
+}
+
+export interface SubmitLessonPayload {
+  lessonNumber: number;
 }

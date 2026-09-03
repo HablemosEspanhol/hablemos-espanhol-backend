@@ -1,23 +1,27 @@
-import { NextFunction, Request, Response } from 'express';
-import { AuthService } from '../modules/auth/auth.service.js';
+import { Request } from 'express';
+import DI from './di.js'; // Seu container/instância de DI
 
-export function createAuthMiddleware(authService: AuthService) {
-  return (req: Request, res: Response, next: NextFunction): void => {
-    const token = authService.extractTokenFromHeader(req.header('authorization'));
+export async function expressAuthentication(
+  request: Request,
+  securityName: string,
+  scopes?: string[]
+): Promise<any> {
+  if (securityName === 'jwt') {
+    const authHeader = request.header('authorization');
+    const token = DI.AuthService.extractTokenFromHeader(authHeader);
 
     if (!token) {
-      res.status(401).json({ error: 'Authorization token is required' });
-      return;
+      return Promise.reject(new Error('Authorization token is required'));
     }
 
-    const payload = authService.validateToken(token);
+    const payload = DI.AuthService.validateToken(token);
     if (!payload) {
-      res.status(401).json({ error: 'Invalid or expired token' });
-      return;
+      return Promise.reject(new Error('Invalid or expired token'));
     }
 
-    req.headers['x-auth-user-id'] = String(payload.userId);
-    req.headers['x-auth-username'] = payload.username;
-    next();
-  };
+    // O retorno desta função é automaticamente gravado em `request.user` pelo tsoa
+    return Promise.resolve(payload);
+  }
+
+  return Promise.reject(new Error('Unknown security scheme'));
 }

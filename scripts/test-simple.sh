@@ -146,7 +146,7 @@ if ! skip_test 7; then
   RESPONSE_SOURCE=$(curl -s "$API/api/exercises?username=test_user_submit" \
     -H "Authorization: Bearer $AUTH_TOKEN")
   EXERCISE_ID=$(echo "$RESPONSE_SOURCE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-  SUBMIT_DATA="{\"username\":\"test_user_submit\",\"answers\":[{\"exerciseId\":\"$EXERCISE_ID\",\"answer\":\"Hola\"}]}"
+  SUBMIT_DATA="{\"answers\":[{\"exerciseId\":\"$EXERCISE_ID\",\"answer\":\"Hola\"}]}"
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/api/exercises/submit" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $AUTH_TOKEN" \
@@ -161,7 +161,7 @@ if ! skip_test 8; then
   RESPONSE_SOURCE=$(curl -s "$API/api/exercises?username=test_user_check" \
     -H "Authorization: Bearer $AUTH_TOKEN")
   EXERCISE_ID=$(echo "$RESPONSE_SOURCE" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-  CHECK_DATA="{\"username\":\"test_user_check\",\"answer\":{\"exerciseId\":\"$EXERCISE_ID\",\"userAnswer\":\"Hola\"}}"
+  CHECK_DATA="{\"answer\":{\"exerciseId\":\"$EXERCISE_ID\",\"userAnswer\":\"Hola\"}}"
   HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$API/api/exercises/check" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $AUTH_TOKEN" \
