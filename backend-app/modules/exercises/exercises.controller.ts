@@ -1,84 +1,94 @@
-import { Router, Request, Response, RequestHandler } from 'express';
 import Logger from '../../shared/Logger.js';
-import { PublicExercise, SubmitValidationResult } from './exercises.types.js';
+import { CheckExercisePayload, PublicExercise, SubmitExercisesPayload, SubmitValidationResult } from './exercises.types.js';
 import { SubmitAnswerInput, CheckAnswerResult } from '../user/user-progress.types.js';
 import { ExercisesService } from './exercises.service.js';
-import { BaseController } from '../../shared/base.controller.js';
+import { Controller, Get, Post, Body, Header, Response, Route, Security, SuccessResponse, Tags, Request } from "tsoa";
+import { Request as ExpressRequest } from 'express';
+import DI from '../../shared/di.js';
 
-export class ExercisesController extends BaseController{
+@Tags("Exercises")
+@Route("api/exercises")
+@Security("jwt")
+export class ExercisesController extends Controller {
 
-  // Recebe o serviço puramente desacoplado por inversão de dependência
-  constructor(private readonly exercisesService: ExercisesService) {
+  constructor(private readonly exercisesService: ExercisesService = DI.ExercisesService) {
     super();
-    if(exercisesService == null) throw new Error("[ExercisesController] exercisesService is null");
+    if (exercisesService == null) throw new Error("[ExercisesController] exercisesService is null");
   }
 
   /**
-   * Inicializa o mapeamento de endpoints das rotas de exercícios
+   * Obtém a lista de exercícios para o usuário informado no cabeçalho.
+   * 
    */
-  protected initializeRoutes(router: Router): void {
-    router.get('/', this.getExercises.bind(this));
-    router.post('/submit', this.submitExercises.bind(this));
-    router.post('/check', this.checkExercise.bind(this));
-  }
-
-  /**
-   * GET /api/exercises?username={username}
-   */
-  private async getExercises(req: Request, res: Response): Promise<void> {
+  @Get()
+  @SuccessResponse("200", "Exercícios obtidos com sucesso")
+  @Response("500", "Erro interno do servidor")
+  public async getExercises(
+     @Request() request: ExpressRequest
+  ): Promise<PublicExercise[]> {
     try {
-      const username = req.headers['x-auth-username'] as string;
-
-      const exercises: PublicExercise[] = await this.exercisesService.getExercisesByUsername(username);
-      res.json(exercises);
+      const { username } = request.user!;
+      return await this.exercisesService.getExercisesByUsername(username);
     } catch (error: any) {
       Logger.error('Error generating exercises:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      this.setStatus(500);
+      throw new Error('Internal server error');
     }
-  };
+  }
 
   /**
-   * POST /api/exercises/submit
+   * Envia as respostas de um conjunto de exercícios para validação.
+   * 
+   * @param requestBody Objeto contendo o array de respostas 'answers'
    */
-  private async submitExercises(req: Request, res: Response): Promise<void> {
+  @Post("submit")
+  @SuccessResponse("200", "Exercícios validados com sucesso")
+  @Response("400", "Dados de entrada inválidos")
+  @Response("500", "Erro interno do servidor")
+  public async submitExercises(
+    @Request() request: ExpressRequest,
+    @Body() requestBody: SubmitExercisesPayload
+  ): Promise<SubmitValidationResult> {
     try {
-      
-      const username = req.headers['x-auth-username'] as string;
-      const { answers } = req.body as { answers?: SubmitAnswerInput[] };
-
-      const response: SubmitValidationResult = await this.exercisesService.validateExercise(
+      const { username } = request.user!;
+      return await this.exercisesService.validateExercise(
         username,
-        answers!
+        requestBody.answers
       );
-      
-      res.json(response);
     } catch (error: any) {
       Logger.error('Error submitting exercises:', error);
       const status = error.status || 500;
       const message = error.error || 'Internal server error';
-      res.status(status).json({ error: message });
+      this.setStatus(status);
+      throw new Error(message);
     }
-  };
+  }
 
   /**
-   * POST /api/exercises/check
+   * Checa uma única resposta de exercício em tempo real.
+   * 
+   * @param requestBody Objeto contendo a resposta 'answer' a ser checada
    */
-  private async checkExercise(req: Request, res: Response): Promise<void> {
+  @Post("check")
+  @SuccessResponse("200", "Exercício checado com sucesso")
+  @Response("400", "Dados de entrada inválidos")
+  @Response("500", "Erro interno do servidor")
+  public async checkExercise(
+    @Request() request: ExpressRequest,
+    @Body() requestBody: CheckExercisePayload
+  ): Promise<CheckAnswerResult> {
     try {
-      const username = req.headers['x-auth-username'] as string;
-      const { answer } = req.body as { username?: string; answer?: SubmitAnswerInput };
-
-      const result: CheckAnswerResult = await this.exercisesService.checkOneExercise(
-        username!, 
-        answer!
+      const { username } = request.user!;
+      return await this.exercisesService.checkOneExercise(
+        username,
+        requestBody.answer
       );
-
-      res.json(result);
     } catch (error: any) {
       Logger.error('Error checking exercise:', error);
       const status = error.status || 500;
       const message = error.error || 'Internal server error';
-      res.status(status).json({ error: message });
+      this.setStatus(status);
+      throw new Error(message);
     }
-  };
+  }
 }

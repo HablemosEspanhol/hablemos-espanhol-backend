@@ -122,6 +122,11 @@ Importante: Retorne APENAS o JSON, nenhum outro texto.`;
     }
   }
 
+  public async generateText(prompt: string, options?: { temperature?: number; top_p?: number; num_predict?: number }): Promise<string> {
+    const result = await this.llm.generateText(prompt, options);
+    return result.response;
+  }
+
   public async executeFetch(): Promise<void> {
     Logger.info("[OLLAMA] Fazendo pooling de perguntas");
     const amountOfQuestionToPull = 3;

@@ -7,26 +7,28 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "dev": "tsx watch server.js",
-    "dev:mock": "tsx watch server.js --mock",
+    "swagger:generate": "tsoa spec-and-routes",
+    "dev": "npm run swagger:generate && tsx watch server.js",    
+    "dev:mock": "npm run swagger:generate && tsx watch server.js --mock",
     "start": "node dist/server.js",
     "start:mock": "node dist/server.js --mock",
-    "build": "tsc",
+    "build": "npm run swagger:generate && tsc",
     "test": "jest",
-    "test:api": "tsx tests/api-tests.js"
+    "api:test-simple": "tsx tests/api-test-simple.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
     "dotenv": "^16.3.1",
     "express": "^5.2.1",
     "mysql2": "^3.6.0",
-    "swagger-ui-express": "^4.6.3"
+    "swagger-ui-express": "^4.6.3",
+    "tsoa": "^7.0.0-alpha.0"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.4.1",
     "@types/supertest": "^7.2.1",
     "@types/swagger-ui-express": "^4.1.8",
     "jest": "^30.3.0",

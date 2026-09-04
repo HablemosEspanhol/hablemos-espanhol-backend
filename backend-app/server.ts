@@ -36,6 +36,7 @@ async function populateCache() {
     try{
         Logger.info("Lendo dados previamente salvos");
         await DI.QuestionsRepository.loadDataFromDisc();
+        await DI.LessonsRepository.seedBaseData();
     } catch(error: any) {
         Logger.error("Error when population cache", error);
     }

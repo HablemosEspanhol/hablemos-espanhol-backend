@@ -4,7 +4,7 @@
 # Estratégia: Testar SSH diretamente (muitos hosts bloqueiam ICMP/ping)
 
 CONTEXT_NAME="aspire-m5"
-SSH_USER="tiago"
+SSH_USER="deploy-user"
 BASE_IP="192.168.15"
 START_RANGE=2
 END_RANGE=20

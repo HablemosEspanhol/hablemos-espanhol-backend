@@ -5,7 +5,8 @@ import Logger from "../Logger.js";
 
 export class LocalOllama implements LLMProvider {
   
-  public readonly model: string = "phi3:mini";
+  // public readonly model: string = "phi3:mini";
+  public readonly model: string = "deepseek-r1:1.5b";
   private url: string = OLLAMA_URL;
   public readonly providerName: string = this.constructor.name;
 

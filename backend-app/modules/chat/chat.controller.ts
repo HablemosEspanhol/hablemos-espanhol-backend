@@ -1,41 +1,38 @@
-import { Router, Request, Response, RequestHandler } from 'express';
 import { ChatService } from './chat.service.js';
 import Logger from '../../shared/Logger.js';
-import { IUserProgressRepository } from '../user/iuser-progress.repository.js';
-import { BaseController } from '../../shared/base.controller.js';
 import { UserProgressService } from '../user/user-progress.service.js';
+import { Body, Controller, Post, Route, SuccessResponse, Tags, Response, Security } from 'tsoa';
+import DI from '../../shared/di.js';
+import { ChatPayload, ChatServiceResponse } from './chat.types.js';
 
-export class ChatController extends BaseController {
+@Tags("Chat")
+@Route("api/chat")
+export class ChatController extends Controller {
 
   // Recebe as dependências da aplicação através do construtor
   constructor(
-    private readonly chatService: ChatService,
-    private readonly userProgressService: UserProgressService
+    private readonly chatService: ChatService = DI.ChatService,
+    private readonly userProgressService: UserProgressService = DI.UserProgressService
   ) {
     super();
   }
 
-  /**
-   * Mapeia os endpoints do Express para os métodos da classe.
-   */
-  protected initializeRoutes(router: Router): void {
-    // Usamos uma arrow function ou bind para não perder o escopo do "this" da classe
-    router.post('/', this.handleChatRequest.bind(this));
-  }
+ 
+  @Post()
+  @SuccessResponse("200", "Mensagem processada com sucesso")
+  @Response("400", "Username e message são obrigatórios")
+  @Response("500", "Erro interno do servidor")
+  public async handleChatRequest(
+    @Body() requestBody: ChatPayload
+  ): Promise<ChatServiceResponse> {
+    const { username, message } = requestBody;
 
-  /**
-   * Handler principal da rota de POST /api/chat
-   */
-  private async handleChatRequest(req: Request, res: Response): Promise<void> {
+    if (!username || !message) {
+      this.setStatus(400);
+      throw new Error('Username and message are required');
+    }
+
     try {
-      const { username, message } = req.body as { username?: string; message?: string };
-
-      if (!username || !message) {
-        res.status(400).json({ error: 'Username and message are required' });
-        return;
-      }
-
-      // Interage estritamente com as dependências injetadas
       await this.userProgressService.getOrCreateUser(username);
       const context = await this.userProgressService.getUserChatContext(username);
       
@@ -44,10 +41,11 @@ export class ChatController extends BaseController {
         ...context
       });
 
-      res.json(chatResponse);
+      return chatResponse;
     } catch (error: any) {
       Logger.error('Error in chat endpoint:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      this.setStatus(500);
+      throw new Error('Internal server error');
     }
-  };
+  }
 }

@@ -1,64 +1,69 @@
-import { Router, Request, Response, RequestHandler } from 'express';
 import Logger from '../../shared/Logger.js';
-import { LevelPhrase, PaginatedPhrasesResponse } from '../exercises/questions.types.js';
+import { PaginatedPhrasesResponse } from '../exercises/questions.types.js';
 import { QuestionsService } from '../exercises/question.service.js';
-import { BaseController } from '../../shared/base.controller.js';
+import { Controller, Get, Query, Route, Response, SuccessResponse, Tags, Security } from 'tsoa';
+import DI from '../../shared/di.js';
 
-export class PhrasesController extends BaseController{
+@Tags("Phrases")
+@Route("api/phrases")
+export class PhrasesController extends Controller {
 
-  // Recebe a interface do serviço puramente desacoplada por injeção de dependência
-  constructor(private readonly questionsService: QuestionsService) {
+  constructor(private readonly questionsService: QuestionsService = DI.QuestionsService) {
     super();
   }
 
   /**
-   * Inicializa o mapeamento de endpoints para o recurso de frases
+   * Busca frases paginadas por nível de aprendizado.
+   * 
+   * @param level Nível das frases a ser consultado
+   * @param page Número da página (padrão: 1)
+   * @param limit Quantidade de itens por página (máximo: 100, padrão: 20)
    */
-  protected initializeRoutes(router: Router): void {
-    router.get('/', this.getPhrasesByLevel.bind(this));
-  }
-
-  /**
-   * GET /api/phrases?level={level}&page={page}&limit={limit}
-   */
-  private async getPhrasesByLevel(req: Request, res: Response): Promise<void> {
+  @Get()
+  @SuccessResponse("200", "Frases retornadas com sucesso")
+  @Response("400", "Parâmetro level ausente ou paginação inválida")
+  @Response("500", "Erro interno do servidor")
+  public async getPhrasesByLevel(
+    @Query() level: string,
+    @Query() page: number = 1,
+    @Query() limit: number = 20
+  ): Promise<PaginatedPhrasesResponse> {
     try {
-      const { level, page = '1', limit = '20' } = req.query;
-      
       if (!level || typeof level !== 'string') {
-        res.status(400).json({ error: 'Level parameter is required and must be a string' });
-        return;
+        this.setStatus(400);
+        throw new Error('Level parameter is required and must be a string');
       }
 
-      const pageNum = parseInt(page as string, 10);
-      const limitNum = parseInt(limit as string, 10);
-      
-      if (isNaN(pageNum) || isNaN(limitNum) || pageNum < 1 || limitNum < 1 || limitNum > 100) {
-        res.status(400).json({ error: 'Invalid page or limit parameters' });
-        return;
+      if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1 || limit > 100) {
+        this.setStatus(400);
+        throw new Error('Invalid page or limit parameters');
       }
 
-      // Interage com o serviço injetado
       const phrases = this.questionsService.getAllPhrasesForLevel(level);
 
       const total = phrases.length;
-      const startIndex = (pageNum - 1) * limitNum;
-      const endIndex = startIndex + limitNum;
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
       const paginatedPhrases = phrases.slice(startIndex, endIndex);
 
-      const response: PaginatedPhrasesResponse = {
+      return {
         level,
         total,
-        page: pageNum,
-        limit: limitNum,
-        totalPages: Math.ceil(total / limitNum),
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
         data: paginatedPhrases
       };
-
-      res.json(response);
     } catch (error: any) {
       Logger.error('Error fetching phrases:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      
+      // Preserva códigos 400 explicitamente definidos
+      if (this.getStatus() === 400) {
+        throw error;
+      }
+
+      this.setStatus(500);
+      throw new Error('Internal server error');
     }
-  };
+  }
 }

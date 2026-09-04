@@ -5,6 +5,7 @@ import { IUserProgressRepository } from "../user/iuser-progress.repository.js";
 import { IExerciseFactory } from "./exercise.factory.js";
 import { UserProgressService } from "../user/user-progress.service.js";
 import Logger from "../../shared/Logger.js";
+import { ExerciseV3Repository, GeneratedExerciseRecord } from "./exercise-v3.repository.js";
 
 export interface CustomHttpError {
   status: number;
@@ -20,7 +21,8 @@ export class ExercisesService {
     private readonly exerciseFactory: IExerciseFactory,
     private readonly userProgressRepository: IUserProgressRepository,
     private readonly userProgressService: UserProgressService,
-    private readonly questionsService: QuestionsService
+    private readonly questionsService: QuestionsService,
+    private readonly exerciseV3Repository: ExerciseV3Repository = new ExerciseV3Repository()
   ) {}
 
   public async getExercisesByUsernameUsingAI(username: string): Promise<PublicExercise[]> {
@@ -111,6 +113,151 @@ export class ExercisesService {
     return publicExercises as PublicExercise[];
   }
 
+  public async getExercisesV3(username: string): Promise<PublicExercise[]> {
+    const userLevel = await this.userProgressRepository.getUserLevel(username);
+    const existing = await this.exerciseV3Repository.listGeneratedExercises();
+    if (existing.length >= 10) {
+      return existing.slice(0, 10).map(item => ({
+        id: item.id,
+        type: "translation",
+        question: item.texto,
+        options: null,
+        palavra: item.palavra
+      }));
+    }
+
+    const generated = await this.generateExercisesV3WithLLM(username);
+    if (generated.length > 0) {
+      await this.exerciseV3Repository.saveGeneratedExercises(generated);
+    }
+
+    const phrasesFallback = this.buildFallbackExercisesV3FromExistingPhrases(username, userLevel);
+    const source = generated.length >= 10
+      ? generated
+      : phrasesFallback.length >= 10
+        ? phrasesFallback
+        : this.buildFallbackExercisesV3(username);
+
+    if (generated.length < 10 && source.length > 0) {
+      await this.exerciseV3Repository.saveGeneratedExercises(source);
+    }
+
+    return source.slice(0, 10).map(item => ({
+      id: item.id,
+      type: "translation",
+      question: item.texto,
+      options: null,
+      palavra: item.palavra
+    }));
+  }
+
+  private async generateExercisesV3WithLLM(username: string): Promise<GeneratedExerciseRecord[]> {
+    const prompt = `
+Retorne apenas JSON válido.
+Gere exatamente 10 itens para um exercício de tradução em espanhol.
+
+Formato exato:
+[
+  {
+    "palavra": "tema curto",
+    "texto": "frase em espanhol",
+    "traduccion": "tradução em português"
+  }
+]
+
+Regras:
+- frases curtas e naturais
+- contexto de viagem e sobrevivência cotidiana
+- variação entre saudações, direções, restaurante, compras e transporte
+- não inclua explicações, markdown ou texto fora do JSON
+- cada item deve ser único
+- personalize levemente para o usuário ${username}
+`.trim();
+
+    const rawResponse = await this.questionsService.generateText(prompt, {
+      temperature: 0.2,
+      top_p: 0.8,
+      num_predict: 1200
+    });
+
+    const raw = rawResponse.trim();
+    const parsed = this.parseV3Payload(raw);
+    if (parsed.length >= 10) {
+      return parsed.slice(0, 10).map((item, index) => ({
+        id: `${username}-${Date.now()}-${index}`,
+        palavra: String(item.palavra ?? '').trim(),
+        texto: String(item.texto ?? '').trim(),
+        traduccion: String(item.traduccion ?? '').trim()
+      })).filter(item => item.palavra && item.texto && item.traduccion);
+    }
+
+    Logger.warning(`[ExercisesService] v3 payload inválido ou insuficiente, usando fallback determinístico`);
+    return this.buildFallbackExercisesV3(username);
+  }
+
+  private buildFallbackExercisesV3FromExistingPhrases(username: string, userLevel: string): GeneratedExerciseRecord[] {
+    const levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+    const orderedLevels = [userLevel, ...levels.filter(level => level !== userLevel)];
+    const phrases: Array<{ palavra: string; texto: string; traduccion: string }> = [];
+
+    for (const level of orderedLevels) {
+      const levelPhrases = this.questionsService.getPhrasesForExercises(level, this.minimunExerciseAmount);
+      for (const phrase of levelPhrases) {
+        if (phrases.length >= 10) break;
+        if (!phrase.texto || !phrase.traduccion) continue;
+        phrases.push({
+          palavra: phrase.palavra,
+          texto: phrase.texto,
+          traduccion: phrase.traduccion
+        });
+      }
+      if (phrases.length >= 10) break;
+    }
+
+    return phrases.slice(0, 10).map((item, index) => ({
+      id: `${username}-phrases-${index}`,
+      ...item
+    }));
+  }
+
+  private parseV3Payload(raw: string): Array<{ palavra: string; texto: string; traduccion: string }> {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      if (parsed?.items && Array.isArray(parsed.items)) {
+        return parsed.items;
+      }
+      if (parsed?.data && Array.isArray(parsed.data)) {
+        return parsed.data;
+      }
+    } catch {
+      // fallback below
+    }
+    return [];
+  }
+
+  private buildFallbackExercisesV3(username: string): GeneratedExerciseRecord[] {
+    const base = [
+      { palavra: "hola", texto: "Hola, ¿cómo estás?", traduccion: "Olá, como você está?" },
+      { palavra: "dirección", texto: "¿Dónde queda la estación?", traduccion: "Onde fica a estação?" },
+      { palavra: "restaurante", texto: "Quisiera una mesa para dos, por favor.", traduccion: "Gostaria de uma mesa para dois, por favor." },
+      { palavra: "compras", texto: "¿Cuánto cuesta esta camisa?", traduccion: "Quanto custa esta camisa?" },
+      { palavra: "transporte", texto: "Necesito un taxi para el aeropuerto.", traduccion: "Preciso de um táxi para o aeroporto." },
+      { palavra: "ayuda", texto: "No entiendo, ¿puede repetir?", traduccion: "Não entendo, pode repetir?" },
+      { palavra: "hotel", texto: "Tengo una reserva a nombre de Ana.", traduccion: "Tenho uma reserva no nome de Ana." },
+      { palavra: "salud", texto: "Me duele la cabeza y tengo fiebre.", traduccion: "Estou com dor de cabeça e febre." },
+      { palavra: "mercado", texto: "Voy a llevar dos kilos de manzanas.", traduccion: "Vou levar dois quilos de maçãs." },
+      { palavra: "despedida", texto: "Muchas gracias, hasta luego.", traduccion: "Muito obrigado, até logo." }
+    ];
+
+    return base.map((item, index) => ({
+      id: `${username}-fallback-${index}`,
+      ...item
+    }));
+  }
+
   /**
    * Valida uma única resposta pontual de exercício (gabarito imediato)
    */
@@ -157,8 +304,10 @@ export class ExercisesService {
     const result = await this.userProgressService.updateProgress(username, answers);
 
     let message = '';
+    let lessonCompleted = false;
     if (result.accuracy >= 80) {
       message = `Excelente! ${result.accuracy}% correto. Parabéns, você subiu para ${result.newLevel}!`;
+      lessonCompleted = true;
     } else if (result.accuracy >= 60) {
       message = `Bom! ${result.accuracy}% correto. Continue praticando no nível ${result.newLevel}.`;
     } else if (result.accuracy >= 50) {
@@ -170,7 +319,8 @@ export class ExercisesService {
     return {
       accuracy: result.accuracy,
       newLevel: result.newLevel,
-      message
+      message,
+      lessonCompleted
     };
   }
 }

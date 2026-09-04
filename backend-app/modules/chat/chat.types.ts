@@ -14,3 +14,8 @@ export interface ChatServiceResponse {
   timestamp: Date;
   error?: string;
 }
+
+export interface ChatPayload {
+  username: string,
+  message: string
+}
