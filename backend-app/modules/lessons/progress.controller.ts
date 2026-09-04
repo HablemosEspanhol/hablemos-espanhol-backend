@@ -1,13 +1,11 @@
-import { Controller, Get, Header, Response, Route, Security, SuccessResponse, Tags } from "tsoa";
+import { Controller, Get, Header, Response, Route, Security, SuccessResponse, Tags, Request } from "tsoa";
+import { Request as ExpressRequest } from 'express';
 import Logger from "../../shared/Logger.js";
 import { LessonsService } from "./lessons.service.js";
 import DI from "../../shared/di.js";
+import { ProgressSummary } from "./lessons.types.js";
 
 // Importe ou defina a interface do retorno de progress summary se existir
-export interface ProgressSummary {
-  [key: string]: any;
-}
-
 @Tags("Progress")
 @Route("api/progress")
 @Security("jwt")
@@ -20,16 +18,15 @@ export class ProgressController extends Controller {
 
   /**
    * Obtém o resumo do progresso do usuário informado no cabeçalho.
-   * 
-   * @param username Nome do usuário vindo do header x-auth-username
    */
   @Get()
   @SuccessResponse("200", "Resumo do progresso obtido com sucesso")
   @Response("400", "Username ausente")
   @Response("500", "Erro interno do servidor")
   public async getProgress(
-    @Header("x-auth-username") username: string
+    @Request() request: ExpressRequest
   ): Promise<ProgressSummary> {
+    const { username } = request.user!;
     if (!username) {
       this.setStatus(400);
       throw new Error("Username is required");
