@@ -304,8 +304,10 @@ Regras:
     const result = await this.userProgressService.updateProgress(username, answers);
 
     let message = '';
+    let lessonCompleted = false;
     if (result.accuracy >= 80) {
       message = `Excelente! ${result.accuracy}% correto. Parabéns, você subiu para ${result.newLevel}!`;
+      lessonCompleted = true;
     } else if (result.accuracy >= 60) {
       message = `Bom! ${result.accuracy}% correto. Continue praticando no nível ${result.newLevel}.`;
     } else if (result.accuracy >= 50) {
@@ -317,7 +319,8 @@ Regras:
     return {
       accuracy: result.accuracy,
       newLevel: result.newLevel,
-      message
+      message,
+      lessonCompleted
     };
   }
 }

@@ -254,13 +254,13 @@ async function test11A() {
 
 async function test11B() {
   if (skipTest('11B')) return;
-  console.log('Test 11B: POST /api/exercises/v2/submit');
-  const { status, bodyText } = await request(`${API}/api/exercises/v2/submit`, {
+  console.log('Test 11B: POST /api/exercises/v3/submit');
+  const { status, bodyText } = await request(`${API}/api/exercises/v3/submit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeader() },
     body: JSON.stringify({ lessonNumber: 1 }),
   });
-  testResult(status === 200, 'HTTP 200 for /api/exercises/v2/submit');
+  testResult(status === 200, 'HTTP 200 for /api/exercises/v3/submit');
   if (bodyText.includes('"message":')) console.log('  ✓ Has message');
   console.log('');
 }

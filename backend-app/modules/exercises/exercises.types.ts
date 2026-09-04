@@ -36,6 +36,7 @@ export interface SubmitValidationResult {
   accuracy: number;
   newLevel: string;
   message: string;
+  lessonCompleted: boolean
 }
 
 export interface SubmitExercisesPayload {
@@ -48,4 +49,5 @@ export interface CheckExercisePayload {
 
 export interface SubmitLessonPayload {
   lessonNumber: number;
+  answers: SubmitAnswerInput[];
 }
