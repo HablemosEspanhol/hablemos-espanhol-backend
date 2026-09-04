@@ -12,6 +12,11 @@ import Logger from './Logger.js';
  */
 export const setupSwagger = (app: Express, routePath: string = '/swagger'): void => {
   try {
+    if(process.env.SWAGGER_ENABLED != "true") {
+      Logger.warning(`[Swagger] Swagger desabilitado via variável de ambiente SWAGGER_ENABLED`);
+      return;
+    };
+
     const swaggerSpecPath = path.resolve('./build/swagger.json');
 
     if (!fs.existsSync(swaggerSpecPath)) {
