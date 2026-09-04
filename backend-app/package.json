@@ -14,7 +14,7 @@
     "start:mock": "node dist/server.js --mock",
     "build": "npm run swagger:generate && tsc",
     "test": "jest",
-    "test:api": "tsx tests/api-tests.js"
+    "api:test-simple": "tsx tests/api-test-simple.js"
   },
   "dependencies": {
     "cookie-parser": "^1.4.7",
